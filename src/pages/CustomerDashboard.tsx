@@ -77,13 +77,17 @@ const CustomerDashboard = () => {
           ? { ...item, quantity: item.quantity + 1 }
           : item
       ));
+      toast({
+        title: "✅ Updated cart",
+        description: `${product.name} quantity increased`,
+      });
     } else {
       setCart([...cart, { id: product.id, name: product.name, quantity: 1 }]);
+      toast({
+        title: "✅ Added to cart",
+        description: `${product.name} added successfully`,
+      });
     }
-    toast({
-      title: "Added to cart",
-      description: `${product.name} has been added to your cart`,
-    });
   };
 
   const cartItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -103,10 +107,27 @@ const CustomerDashboard = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="relative">
-              <ShoppingBag className="h-5 w-5" />
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="relative group"
+              onClick={() => {
+                if (cartItemsCount > 0) {
+                  toast({
+                    title: "Shopping Cart",
+                    description: `You have ${cartItemsCount} item(s) in your cart`,
+                  });
+                } else {
+                  toast({
+                    title: "Cart is empty",
+                    description: "Add some products to your cart",
+                  });
+                }
+              }}
+            >
+              <ShoppingBag className="h-5 w-5 group-hover:scale-110 transition-transform" />
               {cartItemsCount > 0 && (
-                <span className="absolute -top-1 -right-1 h-5 w-5 bg-primary text-white text-xs rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 h-5 w-5 bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center animate-in zoom-in">
                   {cartItemsCount}
                 </span>
               )}
