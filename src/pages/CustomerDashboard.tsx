@@ -3,11 +3,28 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { MapPin, Search, Star, Clock, Phone, Menu, LogOut, Bell } from "lucide-react";
+import { MapPin, Search, Star, Clock, Phone, Menu, LogOut, Bell, ShoppingBag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const CustomerDashboard = () => {
   const navigate = useNavigate();
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  
+  const [products] = useState([
+    { id: 1, name: "Tomatoes", price: 40, unit: "kg", category: "Vegetables", vendor: "Ravi's Vegetables", image: "🍅", inStock: true },
+    { id: 2, name: "Onions", price: 30, unit: "kg", category: "Vegetables", vendor: "Ravi's Vegetables", image: "🧅", inStock: true },
+    { id: 3, name: "Potatoes", price: 25, unit: "kg", category: "Vegetables", vendor: "Ravi's Vegetables", image: "🥔", inStock: true },
+    { id: 4, name: "Carrots", price: 45, unit: "kg", category: "Vegetables", vendor: "Ravi's Vegetables", image: "🥕", inStock: true },
+    { id: 5, name: "Cabbage", price: 35, unit: "kg", category: "Vegetables", vendor: "Ravi's Vegetables", image: "🥬", inStock: true },
+    { id: 6, name: "Cauliflower", price: 50, unit: "kg", category: "Vegetables", vendor: "Ravi's Vegetables", image: "🥦", inStock: true },
+    { id: 7, name: "Apples", price: 120, unit: "kg", category: "Fruits", vendor: "Ravi's Vegetables", image: "🍎", inStock: true },
+    { id: 8, name: "Bananas", price: 50, unit: "dozen", category: "Fruits", vendor: "Ravi's Vegetables", image: "🍌", inStock: true },
+    { id: 9, name: "Oranges", price: 80, unit: "kg", category: "Fruits", vendor: "Ravi's Vegetables", image: "🍊", inStock: true },
+    { id: 10, name: "Mangoes", price: 150, unit: "kg", category: "Fruits", vendor: "Ravi's Vegetables", image: "🥭", inStock: true },
+    { id: 11, name: "Grapes", price: 90, unit: "kg", category: "Fruits", vendor: "Ravi's Vegetables", image: "🍇", inStock: true },
+    { id: 12, name: "Watermelon", price: 30, unit: "kg", category: "Fruits", vendor: "Ravi's Vegetables", image: "🍉", inStock: true },
+  ]);
+
   const [activeVendors] = useState([
     {
       id: 1,
@@ -40,6 +57,11 @@ const CustomerDashboard = () => {
       isLive: false,
     },
   ]);
+
+  const categories = ["All", "Vegetables", "Fruits"];
+  const filteredProducts = selectedCategory === "All" 
+    ? products 
+    : products.filter(p => p.category === selectedCategory);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
@@ -97,6 +119,50 @@ const CustomerDashboard = () => {
               <p className="text-xs text-muted-foreground">Today</p>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Category Filters */}
+        <div>
+          <h2 className="text-xl font-bold mb-4">Available Products</h2>
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {categories.map((cat) => (
+              <Button
+                key={cat}
+                variant={selectedCategory === cat ? "default" : "outline"}
+                onClick={() => setSelectedCategory(cat)}
+                className="whitespace-nowrap"
+              >
+                {cat}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {/* Products Grid */}
+        <div className="grid grid-cols-2 gap-4">
+          {filteredProducts.map((product) => (
+            <Card key={product.id} className="border-2 hover:shadow-lg transition-shadow">
+              <CardContent className="p-4">
+                <div className="text-4xl mb-2 text-center">{product.image}</div>
+                <h3 className="font-bold text-center mb-1">{product.name}</h3>
+                <p className="text-center text-sm text-muted-foreground mb-2">
+                  {product.vendor}
+                </p>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-lg font-bold text-primary">
+                    ₹{product.price}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    per {product.unit}
+                  </span>
+                </div>
+                <Button className="w-full" size="sm">
+                  <ShoppingBag className="mr-2 h-4 w-4" />
+                  Add to Cart
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         {/* Map View */}
