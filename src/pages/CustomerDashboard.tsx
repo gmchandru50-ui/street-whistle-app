@@ -3,12 +3,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MapPin, Search, Star, Clock, Phone, Menu, LogOut, Bell, ShoppingBag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 const CustomerDashboard = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [cart, setCart] = useState<Array<{ id: number; name: string; quantity: number }>>([]);
+  const [selectedVendor, setSelectedVendor] = useState<typeof activeVendors[0] | null>(null);
+  const [showMap, setShowMap] = useState(false);
   
   const [products] = useState([
     { id: 1, name: "Tomatoes", price: 40, unit: "kg", category: "Vegetables", vendor: "Ravi's Vegetables", image: "🍅", inStock: true },
@@ -63,6 +69,25 @@ const CustomerDashboard = () => {
     ? products 
     : products.filter(p => p.category === selectedCategory);
 
+  const addToCart = (product: typeof products[0]) => {
+    const existingItem = cart.find(item => item.id === product.id);
+    if (existingItem) {
+      setCart(cart.map(item => 
+        item.id === product.id 
+          ? { ...item, quantity: item.quantity + 1 }
+          : item
+      ));
+    } else {
+      setCart([...cart, { id: product.id, name: product.name, quantity: 1 }]);
+    }
+    toast({
+      title: "Added to cart",
+      description: `${product.name} has been added to your cart`,
+    });
+  };
+
+  const cartItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
       {/* Header */}
@@ -78,6 +103,14 @@ const CustomerDashboard = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="relative">
+              <ShoppingBag className="h-5 w-5" />
+              {cartItemsCount > 0 && (
+                <span className="absolute -top-1 -right-1 h-5 w-5 bg-primary text-white text-xs rounded-full flex items-center justify-center">
+                  {cartItemsCount}
+                </span>
+              )}
+            </Button>
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
               <span className="absolute top-1 right-1 h-2 w-2 bg-primary rounded-full" />
@@ -156,7 +189,7 @@ const CustomerDashboard = () => {
                     per {product.unit}
                   </span>
                 </div>
-                <Button className="w-full" size="sm">
+                <Button className="w-full" size="sm" onClick={() => addToCart(product)}>
                   <ShoppingBag className="mr-2 h-4 w-4" />
                   Add to Cart
                 </Button>
@@ -182,7 +215,7 @@ const CustomerDashboard = () => {
                 <p className="text-sm text-muted-foreground">Vendors near Sobha Lakeview, Bellandur</p>
               </div>
             </div>
-            <Button variant="outline" className="w-full mt-4">
+            <Button variant="outline" className="w-full mt-4" onClick={() => setShowMap(true)}>
               View Full Map
             </Button>
           </CardContent>
@@ -235,7 +268,7 @@ const CustomerDashboard = () => {
                       <Phone className="mr-2 h-4 w-4" />
                       Call
                     </Button>
-                    <Button variant="outline" className="flex-1">
+                    <Button variant="outline" className="flex-1" onClick={() => setSelectedVendor(vendor)}>
                       View Profile
                     </Button>
                   </div>
@@ -283,6 +316,107 @@ const CustomerDashboard = () => {
           Logout
         </Button>
       </div>
+
+      {/* Vendor Profile Dialog */}
+      <Dialog open={selectedVendor !== null} onOpenChange={(open) => !open && setSelectedVendor(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Vendor Profile</DialogTitle>
+          </DialogHeader>
+          {selectedVendor && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="h-20 w-20 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center text-4xl">
+                  {selectedVendor.image}
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-xl">{selectedVendor.name}</h3>
+                  <p className="text-muted-foreground">{selectedVendor.type}</p>
+                  {selectedVendor.isLive && (
+                    <Badge className="bg-secondary text-white mt-2">
+                      🟢 Live Now
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Star className="h-5 w-5 fill-yellow-500 text-yellow-500" />
+                  <span className="font-semibold">{selectedVendor.rating}</span>
+                  <span className="text-muted-foreground text-sm">rating</span>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="font-medium">{selectedVendor.distance}</p>
+                    <p className="text-sm text-muted-foreground">{selectedVendor.location}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Phone className="h-5 w-5 text-primary" />
+                  <p className="font-medium">+91 98765 43210</p>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t">
+                <h4 className="font-semibold mb-2">About</h4>
+                <p className="text-sm text-muted-foreground">
+                  Serving fresh {selectedVendor.type.toLowerCase()} to the Bellandur community for over 5 years. 
+                  Known for quality products and friendly service.
+                </p>
+              </div>
+
+              <div className="flex gap-2">
+                <Button className="flex-1">
+                  <Phone className="mr-2 h-4 w-4" />
+                  Call Now
+                </Button>
+                <Button variant="outline" className="flex-1">
+                  Get Directions
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Map Dialog */}
+      <Dialog open={showMap} onOpenChange={setShowMap}>
+        <DialogContent className="max-w-2xl h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>Live Vendor Map</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 bg-muted rounded-lg flex items-center justify-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5" />
+            <div className="text-center z-10 space-y-4">
+              <MapPin className="h-16 w-16 text-primary mx-auto animate-bounce" />
+              <div>
+                <p className="text-lg font-medium">Interactive Map Coming Soon</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  This will show real-time locations of all active vendors
+                </p>
+              </div>
+              <div className="space-y-2 mt-6">
+                {activeVendors.filter(v => v.isLive).map((vendor) => (
+                  <div key={vendor.id} className="bg-card p-3 rounded-lg text-left">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">{vendor.image}</span>
+                      <div className="flex-1">
+                        <p className="font-medium">{vendor.name}</p>
+                        <p className="text-xs text-muted-foreground">{vendor.location}</p>
+                      </div>
+                      <Badge className="bg-secondary text-white">Live</Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
