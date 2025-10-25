@@ -7,14 +7,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { MapPin, Search, Star, Clock, Phone, Menu, LogOut, Bell, ShoppingBag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { CartDrawer } from "@/components/CartDrawer";
 
 const CustomerDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [cart, setCart] = useState<Array<{ id: number; name: string; quantity: number }>>([]);
+  const [cart, setCart] = useState<Array<{ id: number; name: string; price: number; quantity: number; unit: string; vendor: string }>>([]);
   const [selectedVendor, setSelectedVendor] = useState<typeof activeVendors[0] | null>(null);
   const [showMap, setShowMap] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
   
   const [products] = useState([
     { id: 1, name: "Tomatoes", price: 40, unit: "kg", category: "Vegetables", vendor: "Ravi's Vegetables", image: "🍅", inStock: true },
@@ -72,8 +74,8 @@ const CustomerDashboard = () => {
   const addToCart = (product: typeof products[0]) => {
     const existingItem = cart.find(item => item.id === product.id);
     if (existingItem) {
-      setCart(cart.map(item => 
-        item.id === product.id 
+      setCart(cart.map(item =>
+        item.id === product.id
           ? { ...item, quantity: item.quantity + 1 }
           : item
       ));
@@ -82,12 +84,34 @@ const CustomerDashboard = () => {
         description: `${product.name} quantity increased`,
       });
     } else {
-      setCart([...cart, { id: product.id, name: product.name, quantity: 1 }]);
+      setCart([...cart, { 
+        id: product.id, 
+        name: product.name, 
+        price: product.price,
+        quantity: 1,
+        unit: product.unit,
+        vendor: product.vendor
+      }]);
       toast({
         title: "✅ Added to cart",
         description: `${product.name} added successfully`,
       });
     }
+  };
+
+  const updateCartQuantity = (id: number, quantity: number) => {
+    setCart(cart.map(item =>
+      item.id === id ? { ...item, quantity } : item
+    ));
+  };
+
+  const removeFromCart = (id: number) => {
+    const item = cart.find(c => c.id === id);
+    setCart(cart.filter(c => c.id !== id));
+    toast({
+      title: "Removed from cart",
+      description: `${item?.name} removed`,
+    });
   };
 
   const cartItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -111,19 +135,7 @@ const CustomerDashboard = () => {
               variant="ghost" 
               size="icon" 
               className="relative group"
-              onClick={() => {
-                if (cartItemsCount > 0) {
-                  toast({
-                    title: "Shopping Cart",
-                    description: `You have ${cartItemsCount} item(s) in your cart`,
-                  });
-                } else {
-                  toast({
-                    title: "Cart is empty",
-                    description: "Add some products to your cart",
-                  });
-                }
-              }}
+              onClick={() => setCartOpen(true)}
             >
               <ShoppingBag className="h-5 w-5 group-hover:scale-110 transition-transform" />
               {cartItemsCount > 0 && (
@@ -438,6 +450,14 @@ const CustomerDashboard = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <CartDrawer
+        open={cartOpen}
+        onOpenChange={setCartOpen}
+        cart={cart}
+        onUpdateQuantity={updateCartQuantity}
+        onRemoveItem={removeFromCart}
+      />
     </div>
   );
 };

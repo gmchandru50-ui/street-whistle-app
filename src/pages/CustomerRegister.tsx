@@ -12,21 +12,59 @@ const CustomerRegister = () => {
   const { toast } = useToast();
   const [otpSent, setOtpSent] = useState(false);
   const [phone, setPhone] = useState("");
+  const [generatedOtp, setGeneratedOtp] = useState("");
+  const [otpInput, setOtpInput] = useState("");
 
   const handleSendOTP = () => {
-    if (phone) {
+    if (phone && phone.length >= 10) {
+      // Generate a random 6-digit OTP
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      setGeneratedOtp(otp);
       setOtpSent(true);
+      
+      // In a real app, this would be sent via SMS
+      console.log(`OTP for ${phone}: ${otp}`);
+      
       toast({
-        title: "OTP Sent!",
-        description: `Verification code sent to ${phone}`,
+        title: "✅ OTP Sent!",
+        description: `Verification code sent to ${phone}. Demo OTP: ${otp}`,
+        duration: 10000,
       });
+    } else {
+      toast({
+        title: "❌ Invalid Phone Number",
+        description: "Please enter a valid 10-digit phone number",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleVerifyOtp = () => {
+    if (otpInput === generatedOtp) {
+      toast({
+        title: "✅ OTP Verified!",
+        description: "Your phone number has been verified successfully",
+      });
+      return true;
+    } else {
+      toast({
+        title: "❌ Invalid OTP",
+        description: "Please enter the correct OTP",
+        variant: "destructive",
+      });
+      return false;
     }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!handleVerifyOtp()) {
+      return;
+    }
+    
     toast({
-      title: "Registration Successful!",
+      title: "🎉 Registration Successful!",
       description: "Welcome to PushCart. You can now track vendors near you.",
     });
     setTimeout(() => navigate('/customer-dashboard'), 2000);
@@ -96,19 +134,27 @@ const CustomerRegister = () => {
                     <Label htmlFor="otp">Enter OTP *</Label>
                     <Input
                       id="otp"
+                      type="text"
                       placeholder="Enter 6-digit OTP"
+                      value={otpInput}
+                      onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, '').slice(0, 6))}
                       required
                       maxLength={6}
                       className="h-12 text-center text-2xl tracking-widest"
                     />
-                    <Button
-                      type="button"
-                      variant="link"
-                      className="text-sm text-muted-foreground"
-                      onClick={handleSendOTP}
-                    >
-                      Resend OTP
-                    </Button>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-muted-foreground">
+                        Demo Mode: Check notification for OTP
+                      </p>
+                      <Button
+                        type="button"
+                        variant="link"
+                        className="text-sm text-primary"
+                        onClick={handleSendOTP}
+                      >
+                        Resend OTP
+                      </Button>
+                    </div>
                   </div>
                 )}
 
