@@ -137,9 +137,16 @@ const CustomerDashboard = () => {
   ]);
 
   const categories = ["All", "Vegetables", "Fruits", "Street Food", "Handicrafts"];
-  const filteredProducts = selectedCategory === "All" 
-    ? products 
-    : products.filter(p => p.category === selectedCategory);
+  
+  // Filter products by category and search query
+  const filteredProducts = products.filter(p => {
+    const matchesCategory = selectedCategory === "All" || p.category === selectedCategory;
+    const matchesSearch = !searchQuery || 
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.vendor.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.category.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   const addToCart = (product: typeof products[0]) => {
     const existingItem = cart.find(item => item.id === product.id);
@@ -187,7 +194,7 @@ const CustomerDashboard = () => {
   const cartItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   // Filter vendors based on search query
-  const filteredVendors = activeVendors.filter(vendor => 
+  const filteredVendors = !searchQuery ? activeVendors : activeVendors.filter(vendor => 
     vendor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     vendor.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
     vendor.location.toLowerCase().includes(searchQuery.toLowerCase())
@@ -292,6 +299,17 @@ const CustomerDashboard = () => {
         </div>
 
         {/* Products Grid */}
+        {searchQuery && filteredProducts.length === 0 && filteredVendors.length === 0 && (
+          <Card className="border-2">
+            <CardContent className="p-8 text-center">
+              <Search className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+              <h3 className="font-semibold text-lg mb-2">No results found</h3>
+              <p className="text-muted-foreground">
+                Try searching for "{searchQuery}" with different keywords
+              </p>
+            </CardContent>
+          </Card>
+        )}
         <div className="grid grid-cols-2 gap-4">
           {filteredProducts.map((product) => (
             <Card key={product.id} className="border-2 hover:shadow-lg transition-shadow">
