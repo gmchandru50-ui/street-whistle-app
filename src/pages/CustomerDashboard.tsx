@@ -31,6 +31,16 @@ const CustomerDashboard = () => {
     { id: 10, name: "Mangoes", price: 150, unit: "kg", category: "Fruits", vendor: "Ravi's Vegetables", image: "🥭", inStock: true },
     { id: 11, name: "Grapes", price: 90, unit: "kg", category: "Fruits", vendor: "Ravi's Vegetables", image: "🍇", inStock: true },
     { id: 12, name: "Watermelon", price: 30, unit: "kg", category: "Fruits", vendor: "Ravi's Vegetables", image: "🍉", inStock: true },
+    { id: 13, name: "Samosa", price: 20, unit: "piece", category: "Street Food", vendor: "Raju's Street Food", image: "🥟", inStock: true },
+    { id: 14, name: "Pani Puri", price: 30, unit: "plate", category: "Street Food", vendor: "Raju's Street Food", image: "🫓", inStock: true },
+    { id: 15, name: "Vada Pav", price: 25, unit: "piece", category: "Street Food", vendor: "Raju's Street Food", image: "🍔", inStock: true },
+    { id: 16, name: "Dosa", price: 40, unit: "piece", category: "Street Food", vendor: "Raju's Street Food", image: "🫔", inStock: true },
+    { id: 17, name: "Bhel Puri", price: 35, unit: "plate", category: "Street Food", vendor: "Raju's Street Food", image: "🥗", inStock: true },
+    { id: 18, name: "Canvas", price: 150, unit: "piece", category: "Handicrafts", vendor: "Aruna's Handicrafts", image: "🖼️", inStock: true },
+    { id: 19, name: "Paint Set", price: 300, unit: "set", category: "Handicrafts", vendor: "Aruna's Handicrafts", image: "🎨", inStock: true },
+    { id: 20, name: "Clay", price: 80, unit: "kg", category: "Handicrafts", vendor: "Aruna's Handicrafts", image: "🏺", inStock: true },
+    { id: 21, name: "Craft Beads", price: 120, unit: "pack", category: "Handicrafts", vendor: "Aruna's Handicrafts", image: "📿", inStock: true },
+    { id: 22, name: "Wool Yarn", price: 200, unit: "bundle", category: "Handicrafts", vendor: "Aruna's Handicrafts", image: "🧶", inStock: true },
   ]);
 
   const [activeVendors] = useState([
@@ -64,9 +74,59 @@ const CustomerDashboard = () => {
       image: "🌺",
       isLive: false,
     },
+    {
+      id: 4,
+      name: "Suresh's Barber Shop",
+      type: "Barber Service",
+      rating: 4.7,
+      distance: "300m away",
+      location: "Market Street, Bellandur",
+      image: "💈",
+      isLive: true,
+    },
+    {
+      id: 5,
+      name: "Aruna's Handicrafts",
+      type: "Handicraft Materials",
+      rating: 4.4,
+      distance: "500m away",
+      location: "Art Corner, HSR Layout",
+      image: "🎨",
+      isLive: true,
+    },
+    {
+      id: 6,
+      name: "Raju's Street Food",
+      type: "Street Food",
+      rating: 4.9,
+      distance: "350m away",
+      location: "Food Court Area, Bellandur",
+      image: "🍜",
+      isLive: true,
+    },
+    {
+      id: 7,
+      name: "Ramesh Tailor",
+      type: "Tailor Service",
+      rating: 4.5,
+      distance: "450m away",
+      location: "Shopping Complex",
+      image: "🧵",
+      isLive: false,
+    },
+    {
+      id: 8,
+      name: "Quick Laundry",
+      type: "Laundry Service",
+      rating: 4.3,
+      distance: "550m away",
+      location: "Residency Road",
+      image: "👕",
+      isLive: true,
+    },
   ]);
 
-  const categories = ["All", "Vegetables", "Fruits"];
+  const categories = ["All", "Vegetables", "Fruits", "Street Food", "Handicrafts"];
   const filteredProducts = selectedCategory === "All" 
     ? products 
     : products.filter(p => p.category === selectedCategory);
@@ -169,7 +229,7 @@ const CustomerDashboard = () => {
         <div className="grid grid-cols-3 gap-3">
           <Card className="text-center">
             <CardContent className="pt-4 pb-3">
-              <p className="text-2xl font-bold text-primary">2</p>
+              <p className="text-2xl font-bold text-primary">{activeVendors.filter(v => v.isLive).length}</p>
               <p className="text-xs text-muted-foreground">Live Now</p>
             </CardContent>
           </Card>
@@ -181,8 +241,8 @@ const CustomerDashboard = () => {
           </Card>
           <Card className="text-center">
             <CardContent className="pt-4 pb-3">
-              <p className="text-2xl font-bold text-accent">3</p>
-              <p className="text-xs text-muted-foreground">Today</p>
+              <p className="text-2xl font-bold text-accent">{activeVendors.length}</p>
+              <p className="text-xs text-muted-foreground">Total Vendors</p>
             </CardContent>
           </Card>
         </div>

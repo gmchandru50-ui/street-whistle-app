@@ -91,6 +91,13 @@ const VendorRegister = () => {
                       <SelectItem value="knife">🔪 Knife Sharpening</SelectItem>
                       <SelectItem value="utensils">🍽️ Utensils</SelectItem>
                       <SelectItem value="flowers">🌺 Flowers</SelectItem>
+                      <SelectItem value="barber">💈 Barber Service</SelectItem>
+                      <SelectItem value="handicrafts">🎨 Handicraft Materials</SelectItem>
+                      <SelectItem value="streetfood">🍜 Street Food</SelectItem>
+                      <SelectItem value="tailor">🧵 Tailor Service</SelectItem>
+                      <SelectItem value="laundry">👕 Laundry Service</SelectItem>
+                      <SelectItem value="plumber">🔧 Plumber</SelectItem>
+                      <SelectItem value="electrician">💡 Electrician</SelectItem>
                       <SelectItem value="other">📦 Other</SelectItem>
                     </SelectContent>
                   </Select>
