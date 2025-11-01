@@ -8,6 +8,7 @@ import { MapPin, Search, Star, Clock, Phone, Menu, LogOut, Bell, ShoppingBag } f
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { CartDrawer } from "@/components/CartDrawer";
+import VendorMap from "@/components/VendorMap";
 
 const CustomerDashboard = () => {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ const CustomerDashboard = () => {
   const [selectedVendor, setSelectedVendor] = useState<typeof activeVendors[0] | null>(null);
   const [showMap, setShowMap] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   
   const [products] = useState([
     { id: 1, name: "Tomatoes", price: 40, unit: "kg", category: "Vegetables", vendor: "Ravi's Vegetables", image: "🍅", inStock: true },
@@ -53,6 +55,7 @@ const CustomerDashboard = () => {
       location: "Near Gate 2, Sobha Lakeview",
       image: "🥬",
       isLive: true,
+      coordinates: [77.5946, 12.9716] as [number, number],
     },
     {
       id: 2,
@@ -63,6 +66,7 @@ const CustomerDashboard = () => {
       location: "Main Road, Bellandur",
       image: "🔪",
       isLive: true,
+      coordinates: [77.6033, 12.9250] as [number, number],
     },
     {
       id: 3,
@@ -73,6 +77,7 @@ const CustomerDashboard = () => {
       location: "Temple Street",
       image: "🌺",
       isLive: false,
+      coordinates: [77.5850, 12.9650] as [number, number],
     },
     {
       id: 4,
@@ -83,6 +88,7 @@ const CustomerDashboard = () => {
       location: "Market Street, Bellandur",
       image: "💈",
       isLive: true,
+      coordinates: [77.6050, 12.9300] as [number, number],
     },
     {
       id: 5,
@@ -93,6 +99,7 @@ const CustomerDashboard = () => {
       location: "Art Corner, HSR Layout",
       image: "🎨",
       isLive: true,
+      coordinates: [77.6400, 12.9100] as [number, number],
     },
     {
       id: 6,
@@ -103,6 +110,7 @@ const CustomerDashboard = () => {
       location: "Food Court Area, Bellandur",
       image: "🍜",
       isLive: true,
+      coordinates: [77.6100, 12.9280] as [number, number],
     },
     {
       id: 7,
@@ -113,6 +121,7 @@ const CustomerDashboard = () => {
       location: "Shopping Complex",
       image: "🧵",
       isLive: false,
+      coordinates: [77.5900, 12.9800] as [number, number],
     },
     {
       id: 8,
@@ -123,6 +132,7 @@ const CustomerDashboard = () => {
       location: "Residency Road",
       image: "👕",
       isLive: true,
+      coordinates: [77.6200, 12.9350] as [number, number],
     },
   ]);
 
@@ -176,6 +186,13 @@ const CustomerDashboard = () => {
 
   const cartItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
+  // Filter vendors based on search query
+  const filteredVendors = activeVendors.filter(vendor => 
+    vendor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    vendor.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    vendor.location.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
       {/* Header */}
@@ -220,9 +237,19 @@ const CustomerDashboard = () => {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
-            placeholder="Search for vegetables, fruits, services..."
+            placeholder="Search for shops, services, vendors..."
             className="pl-10 h-12 bg-card"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              ✕
+            </button>
+          )}
         </div>
 
         {/* Quick Stats */}
@@ -324,7 +351,18 @@ const CustomerDashboard = () => {
           </div>
 
           <div className="space-y-4">
-            {activeVendors.map((vendor) => (
+            {filteredVendors.length === 0 && searchQuery && (
+              <Card className="border-2">
+                <CardContent className="p-8 text-center">
+                  <Search className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                  <h3 className="font-semibold text-lg mb-2">No shops found</h3>
+                  <p className="text-muted-foreground">
+                    Try searching for a different vendor or service
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+            {filteredVendors.map((vendor) => (
               <Card key={vendor.id} className="border-2 hover:shadow-lg transition-shadow">
                 <CardContent className="p-4">
                   <div className="flex gap-4">
@@ -478,35 +516,15 @@ const CustomerDashboard = () => {
 
       {/* Map Dialog */}
       <Dialog open={showMap} onOpenChange={setShowMap}>
-        <DialogContent className="max-w-2xl h-[80vh]">
+        <DialogContent className="max-w-4xl h-[85vh]">
           <DialogHeader>
-            <DialogTitle>Live Vendor Map</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-primary" />
+              Live Vendor Map - Bangalore
+            </DialogTitle>
           </DialogHeader>
-          <div className="flex-1 bg-muted rounded-lg flex items-center justify-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5" />
-            <div className="text-center z-10 space-y-4">
-              <MapPin className="h-16 w-16 text-primary mx-auto animate-bounce" />
-              <div>
-                <p className="text-lg font-medium">Interactive Map Coming Soon</p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  This will show real-time locations of all active vendors
-                </p>
-              </div>
-              <div className="space-y-2 mt-6">
-                {activeVendors.filter(v => v.isLive).map((vendor) => (
-                  <div key={vendor.id} className="bg-card p-3 rounded-lg text-left">
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl">{vendor.image}</span>
-                      <div className="flex-1">
-                        <p className="font-medium">{vendor.name}</p>
-                        <p className="text-xs text-muted-foreground">{vendor.location}</p>
-                      </div>
-                      <Badge className="bg-secondary text-white">Live</Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+          <div className="flex-1 overflow-hidden">
+            <VendorMap vendors={activeVendors} />
           </div>
         </DialogContent>
       </Dialog>
