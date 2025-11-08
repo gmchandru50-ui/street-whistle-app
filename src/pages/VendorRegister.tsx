@@ -7,10 +7,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Upload, Camera } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { LanguageSelector } from "@/components/LanguageSelector";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/translations";
 
 const VendorRegister = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { language } = useLanguage();
+  const t = translations[language];
   const [photoPreview, setPhotoPreview] = useState<string>("");
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,8 +32,8 @@ const VendorRegister = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     toast({
-      title: "Registration Submitted!",
-      description: "Your vendor account is pending approval. We'll notify you soon.",
+      title: t.registrationSubmitted,
+      description: t.pendingApproval,
     });
     setTimeout(() => navigate('/vendor-dashboard'), 2000);
   };
@@ -36,39 +41,41 @@ const VendorRegister = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
       <div className="container mx-auto px-4 py-8">
-        <Button
-          variant="ghost"
-          onClick={() => navigate('/')}
-          className="mb-6"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Home
-        </Button>
+        <div className="flex justify-between items-center mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/')}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            {t.backHome}
+          </Button>
+          <LanguageSelector />
+        </div>
 
         <div className="max-w-2xl mx-auto">
           <Card className="shadow-xl border-2">
             <CardHeader className="space-y-1 pb-8">
               <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                Vendor Registration
+                {t.vendorRegistration}
               </CardTitle>
               <CardDescription className="text-base">
-                Join PushCart and connect with customers across Bangalore
+                {t.vendorRegDesc}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Full Name *</Label>
+                  <Label htmlFor="name">{t.fullName} *</Label>
                   <Input
                     id="name"
-                    placeholder="Enter your full name"
+                    placeholder={t.fullName}
                     required
                     className="h-12"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number *</Label>
+                  <Label htmlFor="phone">{t.phoneNumber} *</Label>
                   <Input
                     id="phone"
                     type="tel"
@@ -79,51 +86,51 @@ const VendorRegister = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="service">Service Type *</Label>
+                  <Label htmlFor="service">{t.serviceType} *</Label>
                   <Select required>
                     <SelectTrigger className="h-12">
-                      <SelectValue placeholder="Select your service" />
+                      <SelectValue placeholder={t.selectService} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="vegetables">🥬 Vegetables</SelectItem>
-                      <SelectItem value="fruits">🍎 Fruits</SelectItem>
-                      <SelectItem value="both">🛒 Vegetables & Fruits</SelectItem>
-                      <SelectItem value="knife">🔪 Knife Sharpening</SelectItem>
-                      <SelectItem value="utensils">🍽️ Utensils</SelectItem>
-                      <SelectItem value="flowers">🌺 Flowers</SelectItem>
-                      <SelectItem value="barber">💈 Barber Service</SelectItem>
-                      <SelectItem value="handicrafts">🎨 Handicraft Materials</SelectItem>
-                      <SelectItem value="streetfood">🍜 Street Food</SelectItem>
-                      <SelectItem value="tailor">🧵 Tailor Service</SelectItem>
-                      <SelectItem value="laundry">👕 Laundry Service</SelectItem>
-                      <SelectItem value="plumber">🔧 Plumber</SelectItem>
-                      <SelectItem value="electrician">💡 Electrician</SelectItem>
-                      <SelectItem value="other">📦 Other</SelectItem>
+                      <SelectItem value="vegetables">🥬 {t.vegetables}</SelectItem>
+                      <SelectItem value="fruits">🍎 {t.fruits}</SelectItem>
+                      <SelectItem value="both">🛒 {t.both}</SelectItem>
+                      <SelectItem value="knife">🔪 {t.knife}</SelectItem>
+                      <SelectItem value="utensils">🍽️ {t.utensils}</SelectItem>
+                      <SelectItem value="flowers">🌺 {t.flowers}</SelectItem>
+                      <SelectItem value="barber">💈 {t.barber}</SelectItem>
+                      <SelectItem value="handicrafts">🎨 {t.handicrafts}</SelectItem>
+                      <SelectItem value="streetfood">🍜 {t.streetFood}</SelectItem>
+                      <SelectItem value="tailor">🧵 {t.tailor}</SelectItem>
+                      <SelectItem value="laundry">👕 {t.laundry}</SelectItem>
+                      <SelectItem value="plumber">🔧 {t.plumber}</SelectItem>
+                      <SelectItem value="electrician">💡 {t.electrician}</SelectItem>
+                      <SelectItem value="other">📦 {t.other}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="area">Primary Area</Label>
+                  <Label htmlFor="area">{t.primaryArea}</Label>
                   <Select>
                     <SelectTrigger className="h-12">
-                      <SelectValue placeholder="Select your area" />
+                      <SelectValue placeholder={t.selectArea} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="indiranagar">Indiranagar</SelectItem>
-                      <SelectItem value="koramangala">Koramangala</SelectItem>
-                      <SelectItem value="whitefield">Whitefield</SelectItem>
-                      <SelectItem value="hebbal">Hebbal</SelectItem>
-                      <SelectItem value="bellandur">Bellandur</SelectItem>
-                      <SelectItem value="marathahalli">Marathahalli</SelectItem>
-                      <SelectItem value="jp-nagar">JP Nagar</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
+                      <SelectItem value="indiranagar">{t.indiranagar}</SelectItem>
+                      <SelectItem value="koramangala">{t.koramangala}</SelectItem>
+                      <SelectItem value="whitefield">{t.whitefield}</SelectItem>
+                      <SelectItem value="hebbal">{t.hebbal}</SelectItem>
+                      <SelectItem value="bellandur">{t.bellandur}</SelectItem>
+                      <SelectItem value="marathahalli">{t.marathahalli}</SelectItem>
+                      <SelectItem value="jp-nagar">{t.jpNagar}</SelectItem>
+                      <SelectItem value="other">{t.other}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Upload Photo *</Label>
+                  <Label>{t.uploadPhoto} *</Label>
                   <div className="flex flex-col items-center gap-4 p-6 border-2 border-dashed rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors">
                     {photoPreview ? (
                       <img
@@ -141,7 +148,7 @@ const VendorRegister = () => {
                       className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
                     >
                       <Upload className="h-4 w-4" />
-                      {photoPreview ? "Change Photo" : "Upload Photo"}
+                      {photoPreview ? t.changePhoto : t.uploadPhoto}
                     </Label>
                     <Input
                       id="photo"
@@ -155,11 +162,11 @@ const VendorRegister = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">About Your Service (Optional)</Label>
+                  <Label htmlFor="description">{t.aboutService}</Label>
                   <textarea
                     id="description"
                     className="w-full min-h-[100px] px-3 py-2 rounded-lg border border-input bg-background text-foreground"
-                    placeholder="Tell customers about your products and service..."
+                    placeholder={t.aboutServicePlaceholder}
                   />
                 </div>
 
@@ -167,7 +174,7 @@ const VendorRegister = () => {
                   type="submit"
                   className="w-full h-12 text-lg bg-gradient-to-r from-primary to-secondary hover:opacity-90"
                 >
-                  Register as Vendor
+                  {t.registerVendor}
                 </Button>
               </form>
             </CardContent>

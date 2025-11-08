@@ -2,65 +2,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, ShoppingCart, User, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { LanguageSelector } from "@/components/LanguageSelector";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/translations";
 
 const Index = () => {
   const navigate = useNavigate();
-  const [language, setLanguage] = useState<"en" | "kn">("en");
-
-  const translations = {
-    en: {
-      tagline: "Connect • Track • Serve",
-      englishBtn: "English",
-      kannadaBtn: "ಕನ್ನಡ",
-      liveIn: "Live in Bangalore",
-      heroTitle: "Your Neighborhood\nVendors, Now Online",
-      heroDesc: "Connect with local push cart vendors in real-time. Fresh vegetables, fruits, and services delivered to your doorstep in Indiranagar, Koramangala, Whitefield & beyond.",
-      vendorTitle: "I'm a Vendor",
-      vendorDesc: "Share your location, alert customers when you arrive, and grow your business",
-      vendorBtn: "Register as Vendor",
-      customerTitle: "I'm a Customer",
-      customerDesc: "Get instant alerts when vendors arrive near you. Track them on the map in real-time",
-      customerBtn: "Register as Customer",
-      adminTitle: "Admin Panel",
-      adminDesc: "Manage vendors, monitor activity, and handle feedback from the community",
-      adminBtn: "Admin Login",
-      howItWorks: "How It Works",
-      trackTitle: "Track Live Location",
-      trackDesc: "Vendors share their GPS location in real-time",
-      alertTitle: "Get Instant Alerts",
-      alertDesc: "Receive notifications when vendors are nearby",
-      rateTitle: "Rate & Review",
-      rateDesc: "Share feedback and build trust in the community",
-      footer: "© 2025 PushCart. Bringing Bangalore's neighborhoods closer."
-    },
-    kn: {
-      tagline: "ಸಂಪರ್ಕಿಸಿ • ಟ್ರ್ಯಾಕ್ ಮಾಡಿ • ಸೇವೆ ಮಾಡಿ",
-      englishBtn: "English",
-      kannadaBtn: "ಕನ್ನಡ",
-      liveIn: "ಬೆಂಗಳೂರಿನಲ್ಲಿ ಲೈವ್",
-      heroTitle: "ನಿಮ್ಮ ನೆರೆಹೊರೆಯ\nವಿಕ್ರೇತರು, ಈಗ ಆನ್‌ಲೈನ್‌ನಲ್ಲಿ",
-      heroDesc: "ಸ್ಥಳೀಯ ಪುಶ್ ಕಾರ್ಟ್ ವಿಕ್ರೇತರೊಂದಿಗೆ ನೇರ ಸಮಯದಲ್ಲಿ ಸಂಪರ್ಕಿಸಿ. ಇಂದಿರಾನಗರ, ಕೊರಮಂಗಲ, ವೈಟ್‌ಫೀಲ್ಡ್ ಮತ್ತು ಇನ್ನೂ ಹೆಚ್ಚಿನ ಸ್ಥಳಗಳಲ್ಲಿ ತಾಜಾ ತರಕಾರಿಗಳು, ಹಣ್ಣುಗಳು ಮತ್ತು ಸೇವೆಗಳನ್ನು ನಿಮ್ಮ ಮನೆ ಬಾಗಿಲಿಗೆ ತಲುಪಿಸಲಾಗುತ್ತದೆ.",
-      vendorTitle: "ನಾನು ವಿಕ್ರೇತ",
-      vendorDesc: "ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ಹಂಚಿಕೊಳ್ಳಿ, ನೀವು ಬಂದಾಗ ಗ್ರಾಹಕರಿಗೆ ಎಚ್ಚರಿಕೆ ನೀಡಿ ಮತ್ತು ನಿಮ್ಮ ವ್ಯಾಪಾರವನ್ನು ಬೆಳೆಸಿ",
-      vendorBtn: "ವಿಕ್ರೇತರಾಗಿ ನೋಂದಾಯಿಸಿ",
-      customerTitle: "ನಾನು ಗ್ರಾಹಕ",
-      customerDesc: "ವಿಕ್ರೇತರು ನಿಮ್ಮ ಹತ್ತಿರ ಬಂದಾಗ ತಕ್ಷಣದ ಎಚ್ಚರಿಕೆಗಳನ್ನು ಪಡೆಯಿರಿ. ನೇರ ಸಮಯದಲ್ಲಿ ನಕ್ಷೆಯಲ್ಲಿ ಅವರನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ",
-      customerBtn: "ಗ್ರಾಹಕರಾಗಿ ನೋಂದಾಯಿಸಿ",
-      adminTitle: "ನಿರ್ವಾಹಕ ಫಲಕ",
-      adminDesc: "ವಿಕ್ರೇತರನ್ನು ನಿರ್ವಹಿಸಿ, ಚಟುವಟಿಕೆಗಳನ್ನು ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡಿ ಮತ್ತು ಸಮುದಾಯದಿಂದ ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ನಿರ್ವಹಿಸಿ",
-      adminBtn: "ನಿರ್ವಾಹಕ ಲಾಗಿನ್",
-      howItWorks: "ಇದು ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ",
-      trackTitle: "ಲೈವ್ ಸ್ಥಳವನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ",
-      trackDesc: "ವಿಕ್ರೇತರು ತಮ್ಮ GPS ಸ್ಥಳವನ್ನು ನೇರ ಸಮಯದಲ್ಲಿ ಹಂಚಿಕೊಳ್ಳುತ್ತಾರೆ",
-      alertTitle: "ತಕ್ಷಣದ ಎಚ್ಚರಿಕೆಗಳನ್ನು ಪಡೆಯಿರಿ",
-      alertDesc: "ವಿಕ್ರೇತರು ಹತ್ತಿರದಲ್ಲಿದ್ದಾಗ ಅಧಿಸೂಚನೆಗಳನ್ನು ಸ್ವೀಕರಿಸಿ",
-      rateTitle: "ರೇಟ್ ಮಾಡಿ ಮತ್ತು ವಿಮರ್ಶಿಸಿ",
-      rateDesc: "ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಹಂಚಿಕೊಳ್ಳಿ ಮತ್ತು ಸಮುದಾಯದಲ್ಲಿ ವಿಶ್ವಾಸವನ್ನು ನಿರ್ಮಿಸಿ",
-      footer: "© 2025 PushCart. ಬೆಂಗಳೂರಿನ ನೆರೆಹೊರೆಗಳನ್ನು ಹತ್ತಿರ ತರುತ್ತಿದೆ."
-    }
-  };
-
+  const { language } = useLanguage();
   const t = translations[language];
 
   return (
@@ -77,22 +25,7 @@ const Index = () => {
               <p className="text-xs text-muted-foreground">{t.tagline}</p>
             </div>
           </div>
-          <div className="flex gap-2">
-            <Button 
-              variant={language === "en" ? "default" : "ghost"} 
-              size="sm"
-              onClick={() => setLanguage("en")}
-            >
-              {t.englishBtn}
-            </Button>
-            <Button 
-              variant={language === "kn" ? "default" : "ghost"} 
-              size="sm"
-              onClick={() => setLanguage("kn")}
-            >
-              {t.kannadaBtn}
-            </Button>
-          </div>
+          <LanguageSelector />
         </div>
       </header>
 
