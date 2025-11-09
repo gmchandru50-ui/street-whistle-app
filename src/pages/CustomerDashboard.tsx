@@ -9,10 +9,15 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { CartDrawer } from "@/components/CartDrawer";
 import VendorMap from "@/components/VendorMap";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/translations";
+import { LanguageSelector } from "@/components/LanguageSelector";
 
 const CustomerDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { language } = useLanguage();
+  const t = translations[language];
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [cart, setCart] = useState<Array<{ id: number; name: string; price: number; quantity: number; unit: string; vendor: string }>>([]);
   const [selectedVendor, setSelectedVendor] = useState<typeof activeVendors[0] | null>(null);
@@ -215,6 +220,7 @@ const CustomerDashboard = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <LanguageSelector />
             <Button 
               variant="ghost" 
               size="icon" 
@@ -244,7 +250,7 @@ const CustomerDashboard = () => {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
-            placeholder="Search for shops, services, vendors..."
+            placeholder={t.searchPlaceholder}
             className="pl-10 h-12 bg-card"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -264,26 +270,26 @@ const CustomerDashboard = () => {
           <Card className="text-center">
             <CardContent className="pt-4 pb-3">
               <p className="text-2xl font-bold text-primary">{activeVendors.filter(v => v.isLive).length}</p>
-              <p className="text-xs text-muted-foreground">Live Now</p>
+              <p className="text-xs text-muted-foreground">{t.liveNow}</p>
             </CardContent>
           </Card>
           <Card className="text-center">
             <CardContent className="pt-4 pb-3">
               <p className="text-2xl font-bold text-secondary">5</p>
-              <p className="text-xs text-muted-foreground">Favorites</p>
+              <p className="text-xs text-muted-foreground">{t.favorites}</p>
             </CardContent>
           </Card>
           <Card className="text-center">
             <CardContent className="pt-4 pb-3">
               <p className="text-2xl font-bold text-accent">{activeVendors.length}</p>
-              <p className="text-xs text-muted-foreground">Total Vendors</p>
+              <p className="text-xs text-muted-foreground">{t.totalVendors}</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Category Filters */}
         <div>
-          <h2 className="text-xl font-bold mb-4">Available Products</h2>
+          <h2 className="text-xl font-bold mb-4">{t.availableProducts}</h2>
           <div className="flex gap-2 overflow-x-auto pb-2">
             {categories.map((cat) => (
               <Button
@@ -292,7 +298,7 @@ const CustomerDashboard = () => {
                 onClick={() => setSelectedCategory(cat)}
                 className="whitespace-nowrap"
               >
-                {cat}
+                {cat === "All" ? t.all : cat}
               </Button>
             ))}
           </div>
@@ -303,7 +309,7 @@ const CustomerDashboard = () => {
           <Card className="border-2">
             <CardContent className="p-8 text-center">
               <Search className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-              <h3 className="font-semibold text-lg mb-2">No results found</h3>
+              <h3 className="font-semibold text-lg mb-2">{t.noResults}</h3>
               <p className="text-muted-foreground">
                 Try searching for "{searchQuery}" with different keywords
               </p>
@@ -324,12 +330,12 @@ const CustomerDashboard = () => {
                     ₹{product.price}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    per {product.unit}
+                    {t.perUnit} {product.unit}
                   </span>
                 </div>
                 <Button className="w-full" size="sm" onClick={() => addToCart(product)}>
                   <ShoppingBag className="mr-2 h-4 w-4" />
-                  Add to Cart
+                  {t.addToCart}
                 </Button>
               </CardContent>
             </Card>
@@ -341,7 +347,7 @@ const CustomerDashboard = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
               <MapPin className="h-5 w-5 text-primary" />
-              Live Vendor Map
+              {t.liveVendorMap}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -349,12 +355,12 @@ const CustomerDashboard = () => {
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5" />
               <div className="text-center z-10 space-y-2">
                 <MapPin className="h-12 w-12 text-primary mx-auto" />
-                <p className="text-muted-foreground font-medium">Interactive Map</p>
-                <p className="text-sm text-muted-foreground">Vendors near Sobha Lakeview, Bellandur</p>
+                <p className="text-muted-foreground font-medium">{t.interactiveMap}</p>
+                <p className="text-sm text-muted-foreground">{t.vendorsNear} Sobha Lakeview, Bellandur</p>
               </div>
             </div>
             <Button variant="outline" className="w-full mt-4" onClick={() => setShowMap(true)}>
-              View Full Map
+              {t.viewFullMap}
             </Button>
           </CardContent>
         </Card>
@@ -362,9 +368,9 @@ const CustomerDashboard = () => {
         {/* Nearby Vendors */}
         <div>
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold">Nearby Vendors</h2>
+            <h2 className="text-xl font-bold">{t.nearbyVendors}</h2>
             <Button variant="link" className="text-primary">
-              View All
+              {t.viewAll}
             </Button>
           </div>
 
@@ -373,9 +379,9 @@ const CustomerDashboard = () => {
               <Card className="border-2">
                 <CardContent className="p-8 text-center">
                   <Search className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                  <h3 className="font-semibold text-lg mb-2">No shops found</h3>
+                  <h3 className="font-semibold text-lg mb-2">{t.noShopsFound}</h3>
                   <p className="text-muted-foreground">
-                    Try searching for a different vendor or service
+                    {t.tryDifferent}
                   </p>
                 </CardContent>
               </Card>

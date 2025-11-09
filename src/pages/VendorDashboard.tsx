@@ -5,26 +5,29 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, Bell, Clock, Star, Menu, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/translations";
+import { LanguageSelector } from "@/components/LanguageSelector";
 
 const VendorDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { language } = useLanguage();
+  const t = translations[language];
   const [isSharing, setIsSharing] = useState(false);
 
   const handleArrivalAlert = () => {
     toast({
-      title: "Alert Sent! 📢",
-      description: "All nearby customers have been notified of your arrival",
+      title: t.alertSent,
+      description: t.allCustomersNotified,
     });
   };
 
   const toggleLocationSharing = () => {
     setIsSharing(!isSharing);
     toast({
-      title: isSharing ? "Location Sharing Stopped" : "Location Sharing Started",
-      description: isSharing
-        ? "You're now offline"
-        : "Customers can now track your location",
+      title: isSharing ? t.locationSharingStopped : t.locationSharingStarted,
+      description: isSharing ? t.nowOffline : t.customersCanTrack,
     });
   };
 
@@ -43,6 +46,7 @@ const VendorDashboard = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <LanguageSelector />
             <Button variant="ghost" size="icon">
               <Menu className="h-5 w-5" />
             </Button>
@@ -55,9 +59,9 @@ const VendorDashboard = () => {
         <Card className="border-2 shadow-lg">
           <CardHeader>
             <div className="flex justify-between items-center">
-              <CardTitle>Vendor Status</CardTitle>
+              <CardTitle>{t.vendorStatus}</CardTitle>
               <Badge variant={isSharing ? "default" : "secondary"} className="text-sm">
-                {isSharing ? "🟢 Online" : "⚫ Offline"}
+                {isSharing ? `🟢 ${t.online}` : `⚫ ${t.offline}`}
               </Badge>
             </div>
           </CardHeader>
@@ -65,11 +69,11 @@ const VendorDashboard = () => {
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center p-4 bg-muted/50 rounded-lg">
                 <p className="text-3xl font-bold text-primary">0</p>
-                <p className="text-sm text-muted-foreground">Alerts Today</p>
+                <p className="text-sm text-muted-foreground">{t.alertsToday}</p>
               </div>
               <div className="text-center p-4 bg-muted/50 rounded-lg">
                 <p className="text-3xl font-bold text-secondary">4.5</p>
-                <p className="text-sm text-muted-foreground">Rating</p>
+                <p className="text-sm text-muted-foreground">{t.rating}</p>
               </div>
             </div>
           </CardContent>
@@ -86,7 +90,7 @@ const VendorDashboard = () => {
             }`}
           >
             <MapPin className="mr-3 h-8 w-8" />
-            {isSharing ? "Stop Location Sharing" : "Start Location Sharing"}
+            {isSharing ? t.stopLocationSharing : t.startLocationSharing}
           </Button>
 
           <Button
@@ -95,7 +99,7 @@ const VendorDashboard = () => {
             className="w-full h-20 text-xl font-bold bg-gradient-to-r from-primary to-primary/90 hover:shadow-xl disabled:opacity-50"
           >
             <Bell className="mr-3 h-8 w-8" />
-            I've Arrived - Alert Customers!
+            {t.arrivedAlert}
           </Button>
         </div>
 
@@ -104,7 +108,7 @@ const VendorDashboard = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MapPin className="h-5 w-5 text-primary" />
-              Current Location
+              {t.currentLocation}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -118,7 +122,7 @@ const VendorDashboard = () => {
               </div>
             ) : (
               <p className="text-muted-foreground text-center py-8">
-                Start location sharing to display your current location
+                {t.startSharingToDisplay}
               </p>
             )}
           </CardContent>
@@ -129,7 +133,7 @@ const VendorDashboard = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock className="h-5 w-5 text-accent" />
-              Regular Schedule
+              {t.regularSchedule}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -140,11 +144,11 @@ const VendorDashboard = () => {
               </div>
               <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
                 <span className="font-medium">Bellandur Area</span>
-                <Badge>Active</Badge>
+                <Badge>{t.active}</Badge>
               </div>
             </div>
             <Button variant="outline" className="w-full mt-4">
-              Edit Schedule
+              {t.editSchedule}
             </Button>
           </CardContent>
         </Card>
@@ -154,7 +158,7 @@ const VendorDashboard = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Star className="h-5 w-5 text-yellow-500" />
-              Recent Reviews
+              {t.recentReviews}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -169,7 +173,7 @@ const VendorDashboard = () => {
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Fresh vegetables every morning! Very friendly vendor.
+                  {t.freshVegetables}
                 </p>
               </div>
               <div className="p-4 bg-muted/30 rounded-lg space-y-2">
@@ -182,7 +186,7 @@ const VendorDashboard = () => {
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Good quality products. Arrives on time regularly.
+                  {t.goodQuality}
                 </p>
               </div>
             </div>
@@ -196,7 +200,7 @@ const VendorDashboard = () => {
           onClick={() => navigate('/')}
         >
           <LogOut className="mr-2 h-4 w-4" />
-          Logout
+          {t.logout}
         </Button>
       </div>
     </div>
