@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/translations";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { VoiceControl } from "@/components/VoiceControl";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -41,6 +42,7 @@ const AdminDashboard = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <VoiceControl />
             <LanguageSelector />
             <Button variant="outline" onClick={() => navigate('/')}>
               <LogOut className="mr-2 h-4 w-4" />

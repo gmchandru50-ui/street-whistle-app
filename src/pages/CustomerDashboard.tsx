@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,13 +10,16 @@ import { useToast } from "@/hooks/use-toast";
 import { CartDrawer } from "@/components/CartDrawer";
 import VendorMap from "@/components/VendorMap";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useVoiceAccessibility } from "@/contexts/VoiceAccessibilityContext";
 import { translations } from "@/translations";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { VoiceControl } from "@/components/VoiceControl";
 
 const CustomerDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { language } = useLanguage();
+  const { announce } = useVoiceAccessibility();
   const t = translations[language];
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [cart, setCart] = useState<Array<{ id: number; name: string; price: number; quantity: number; unit: string; vendor: string }>>([]);
@@ -161,9 +164,13 @@ const CustomerDashboard = () => {
           ? { ...item, quantity: item.quantity + 1 }
           : item
       ));
+      const message = language === "en" ? `${product.name} quantity increased` :
+                      language === "kn" ? `${product.name} ಪ್ರಮಾಣ ಹೆಚ್ಚಿಸಲಾಗಿದೆ` :
+                      `${product.name} मात्रा बढ़ाई गई`;
+      announce(message);
       toast({
         title: "✅ Updated cart",
-        description: `${product.name} quantity increased`,
+        description: message,
       });
     } else {
       setCart([...cart, { 
@@ -174,9 +181,13 @@ const CustomerDashboard = () => {
         unit: product.unit,
         vendor: product.vendor
       }]);
+      const message = language === "en" ? `${product.name} added to cart` :
+                      language === "kn" ? `${product.name} ಕಾರ್ಟ್ಗೆ ಸೇರಿಸಲಾಗಿದೆ` :
+                      `${product.name} कार्ट में जोड़ा गया`;
+      announce(message);
       toast({
         title: "✅ Added to cart",
-        description: `${product.name} added successfully`,
+        description: message,
       });
     }
   };
@@ -220,6 +231,7 @@ const CustomerDashboard = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <VoiceControl />
             <LanguageSelector />
             <Button 
               variant="ghost" 
