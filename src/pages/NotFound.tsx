@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/translations";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { VoiceControl } from "@/components/VoiceControl";
 
 const NotFound = () => {
   const location = useLocation();
@@ -15,7 +16,8 @@ const NotFound = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-muted/30 to-background relative">
-      <div className="absolute top-4 right-4">
+      <div className="absolute top-4 right-4 flex items-center gap-2">
+        <VoiceControl />
         <LanguageSelector />
       </div>
       <div className="text-center">

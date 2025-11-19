@@ -8,13 +8,16 @@ import { ArrowLeft, Upload, Camera } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { VoiceControl } from "@/components/VoiceControl";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useVoiceAccessibility } from "@/contexts/VoiceAccessibilityContext";
 import { translations } from "@/translations";
 
 const VendorRegister = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { language } = useLanguage();
+  const { announce } = useVoiceAccessibility();
   const t = translations[language];
   const [photoPreview, setPhotoPreview] = useState<string>("");
 
@@ -49,7 +52,10 @@ const VendorRegister = () => {
             <ArrowLeft className="mr-2 h-4 w-4" />
             {t.backHome}
           </Button>
-          <LanguageSelector />
+          <div className="flex items-center gap-2">
+            <VoiceControl />
+            <LanguageSelector />
+          </div>
         </div>
 
         <div className="max-w-2xl mx-auto">

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,13 +6,16 @@ import { MapPin, Bell, Clock, Star, Menu, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useVoiceAccessibility } from "@/contexts/VoiceAccessibilityContext";
 import { translations } from "@/translations";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { VoiceControl } from "@/components/VoiceControl";
 
 const VendorDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { language } = useLanguage();
+  const { announce } = useVoiceAccessibility();
   const t = translations[language];
   const [isSharing, setIsSharing] = useState(false);
 
@@ -46,6 +49,7 @@ const VendorDashboard = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <VoiceControl />
             <LanguageSelector />
             <Button variant="ghost" size="icon">
               <Menu className="h-5 w-5" />

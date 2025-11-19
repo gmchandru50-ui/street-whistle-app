@@ -7,13 +7,16 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { VoiceControl } from "@/components/VoiceControl";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useVoiceAccessibility } from "@/contexts/VoiceAccessibilityContext";
 import { translations } from "@/translations";
 
 const CustomerRegister = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { language } = useLanguage();
+  const { announce } = useVoiceAccessibility();
   const t = translations[language];
   const [otpSent, setOtpSent] = useState(false);
   const [phone, setPhone] = useState("");
@@ -86,7 +89,10 @@ const CustomerRegister = () => {
             <ArrowLeft className="mr-2 h-4 w-4" />
             {t.backHome}
           </Button>
-          <LanguageSelector />
+          <div className="flex items-center gap-2">
+            <VoiceControl />
+            <LanguageSelector />
+          </div>
         </div>
 
         <div className="max-w-md mx-auto">

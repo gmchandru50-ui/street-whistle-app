@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/translations";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { VoiceControl } from "@/components/VoiceControl";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -36,7 +37,10 @@ const AdminLogin = () => {
             <ArrowLeft className="mr-2 h-4 w-4" />
             {t.backHome}
           </Button>
-          <LanguageSelector />
+          <div className="flex items-center gap-2">
+            <VoiceControl />
+            <LanguageSelector />
+          </div>
         </div>
 
         <div className="max-w-md mx-auto">
