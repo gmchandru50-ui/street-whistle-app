@@ -14,7 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      vendor_locations: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          last_updated: string | null
+          latitude: number
+          longitude: number
+          vendor_id: string
+          vendor_name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_updated?: string | null
+          latitude: number
+          longitude: number
+          vendor_id: string
+          vendor_name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_updated?: string | null
+          latitude?: number
+          longitude?: number
+          vendor_id?: string
+          vendor_name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
