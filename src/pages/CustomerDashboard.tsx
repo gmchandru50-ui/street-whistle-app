@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,8 @@ import { useVoiceAccessibility } from "@/contexts/VoiceAccessibilityContext";
 import { translations } from "@/translations";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { VoiceControl } from "@/components/VoiceControl";
+import { supabase } from "@/integrations/supabase/client";
+import { calculateDistance, getCurrentLocation } from "@/utils/geolocation";
 
 const CustomerDashboard = () => {
   const navigate = useNavigate();
@@ -23,10 +25,12 @@ const CustomerDashboard = () => {
   const t = translations[language];
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [cart, setCart] = useState<Array<{ id: number; name: string; price: number; quantity: number; unit: string; vendor: string }>>([]);
-  const [selectedVendor, setSelectedVendor] = useState<typeof activeVendors[0] | null>(null);
+  const [selectedVendor, setSelectedVendor] = useState<any>(null);
   const [showMap, setShowMap] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [liveVendors, setLiveVendors] = useState<any[]>([]);
   
   const [products] = useState([
     { id: 1, name: "Tomatoes", price: 40, unit: "kg", category: "Vegetables", vendor: "Ravi's Vegetables", image: "🍅", inStock: true },
@@ -53,7 +57,64 @@ const CustomerDashboard = () => {
     { id: 22, name: "Wool Yarn", price: 200, unit: "bundle", category: "Handicrafts", vendor: "Aruna's Handicrafts", image: "🧶", inStock: true },
   ]);
 
-  const [activeVendors] = useState([
+  // Get user location
+  useEffect(() => {
+    getCurrentLocation()
+      .then((position) => {
+        setUserLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+      })
+      .catch((error) => {
+        console.error('Error getting user location:', error);
+        toast({
+          title: "Location Access",
+          description: "Enable location to see nearby vendors and distances.",
+        });
+      });
+  }, []);
+
+  // Subscribe to real-time vendor location updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('vendor-locations')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'vendor_locations'
+        },
+        (payload) => {
+          console.log('Vendor location update:', payload);
+          fetchLiveVendors();
+        }
+      )
+      .subscribe();
+
+    fetchLiveVendors();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // Fetch live vendors from database
+  const fetchLiveVendors = async () => {
+    const { data, error } = await supabase
+      .from('vendor_locations')
+      .select('*')
+      .eq('is_active', true);
+
+    if (error) {
+      console.error('Error fetching vendors:', error);
+    } else {
+      setLiveVendors(data || []);
+    }
+  };
+
+  const staticVendors = [
     {
       id: 1,
       name: "Ravi's Vegetables",
@@ -142,7 +203,41 @@ const CustomerDashboard = () => {
       isLive: true,
       coordinates: [77.6200, 12.9350] as [number, number],
     },
-  ]);
+  ];
+
+  // Merge live vendors with static vendors and calculate distances
+  const activeVendors = useMemo(() => {
+    // Add live vendors from database
+    const liveVendorData = liveVendors.map((lv) => ({
+      id: `live-${lv.vendor_id}`,
+      name: lv.vendor_name,
+      type: "Live Vendor",
+      rating: 4.5,
+      distance: "calculating...",
+      location: "Live tracking",
+      image: "📍",
+      isLive: true,
+      coordinates: [Number(lv.longitude), Number(lv.latitude)] as [number, number],
+      distanceKm: 0,
+    }));
+
+    // Merge and calculate distances
+    const allVendors = [...staticVendors, ...liveVendorData].map((vendor) => {
+      if (userLocation && vendor.coordinates) {
+        const distanceKm = calculateDistance(
+          userLocation.lat,
+          userLocation.lng,
+          vendor.coordinates[1],
+          vendor.coordinates[0]
+        );
+        return { ...vendor, distanceKm, distance: `${distanceKm} km away` };
+      }
+      return { ...vendor, distanceKm: 999 };
+    });
+
+    // Sort by distance (nearest first)
+    return allVendors.sort((a, b) => a.distanceKm - b.distanceKm);
+  }, [liveVendors, userLocation]);
 
   const categories = ["All", "Vegetables", "Fruits", "Street Food", "Handicrafts"];
   
@@ -560,7 +655,7 @@ const CustomerDashboard = () => {
             </DialogTitle>
           </DialogHeader>
           <div className="flex-1 overflow-hidden">
-            <VendorMap vendors={activeVendors} />
+            <VendorMap vendors={activeVendors} userLocation={userLocation} />
           </div>
         </DialogContent>
       </Dialog>

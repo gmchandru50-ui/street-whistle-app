@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,8 @@ import { useVoiceAccessibility } from "@/contexts/VoiceAccessibilityContext";
 import { translations } from "@/translations";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { VoiceControl } from "@/components/VoiceControl";
+import { supabase } from "@/integrations/supabase/client";
+import { watchLocation } from "@/utils/geolocation";
 
 const VendorDashboard = () => {
   const navigate = useNavigate();
@@ -18,6 +20,104 @@ const VendorDashboard = () => {
   const { announce } = useVoiceAccessibility();
   const t = translations[language];
   const [isSharing, setIsSharing] = useState(false);
+  const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const watchIdRef = useRef<number | null>(null);
+  const locationIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const vendorId = "V12345"; // In real app, get from auth
+  const vendorName = "Ravi's Vegetables";
+
+  // Update location in database
+  const updateLocationInDB = async (lat: number, lng: number) => {
+    try {
+      const { error } = await supabase
+        .from('vendor_locations')
+        .upsert({
+          vendor_id: vendorId,
+          vendor_name: vendorName,
+          latitude: lat,
+          longitude: lng,
+          is_active: true,
+          last_updated: new Date().toISOString(),
+        }, {
+          onConflict: 'vendor_id'
+        });
+
+      if (error) throw error;
+      console.log('Location updated:', { lat, lng });
+    } catch (error) {
+      console.error('Error updating location:', error);
+    }
+  };
+
+  // Stop tracking
+  const stopTracking = async () => {
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
+
+    if (locationIntervalRef.current) {
+      clearInterval(locationIntervalRef.current);
+      locationIntervalRef.current = null;
+    }
+
+    // Mark vendor as inactive
+    try {
+      await supabase
+        .from('vendor_locations')
+        .update({ is_active: false })
+        .eq('vendor_id', vendorId);
+    } catch (error) {
+      console.error('Error stopping tracking:', error);
+    }
+
+    setIsSharing(false);
+    setCurrentLocation(null);
+  };
+
+  // Start tracking
+  const startTracking = () => {
+    if (watchIdRef.current !== null) return; // Already tracking
+
+    watchIdRef.current = watchLocation(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        setCurrentLocation({ lat, lng });
+      },
+      (error) => {
+        console.error('Geolocation error:', error);
+        toast({
+          title: "Location Error",
+          description: "Unable to access your location. Please enable location services.",
+          variant: "destructive",
+        });
+      }
+    );
+
+    // Update location every 7 seconds
+    locationIntervalRef.current = setInterval(async () => {
+      if (currentLocation) {
+        await updateLocationInDB(currentLocation.lat, currentLocation.lng);
+      }
+    }, 7000);
+
+    setIsSharing(true);
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stopTracking();
+    };
+  }, []);
+
+  // Update location when currentLocation changes
+  useEffect(() => {
+    if (currentLocation && isSharing) {
+      updateLocationInDB(currentLocation.lat, currentLocation.lng);
+    }
+  }, [currentLocation, isSharing]);
 
   const handleArrivalAlert = () => {
     toast({
@@ -27,11 +127,19 @@ const VendorDashboard = () => {
   };
 
   const toggleLocationSharing = () => {
-    setIsSharing(!isSharing);
-    toast({
-      title: isSharing ? t.locationSharingStopped : t.locationSharingStarted,
-      description: isSharing ? t.nowOffline : t.customersCanTrack,
-    });
+    if (isSharing) {
+      stopTracking();
+      toast({
+        title: t.locationSharingStopped,
+        description: t.nowOffline,
+      });
+    } else {
+      startTracking();
+      toast({
+        title: t.locationSharingStarted,
+        description: t.customersCanTrack,
+      });
+    }
   };
 
   return (
@@ -116,12 +224,19 @@ const VendorDashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {isSharing ? (
+            {isSharing && currentLocation ? (
               <div className="space-y-2">
-                <p className="font-medium">Near Sobha Lakeview Apartments</p>
-                <p className="text-sm text-muted-foreground">Bellandur, Bangalore - 560103</p>
-                <div className="mt-4 h-48 bg-muted rounded-lg flex items-center justify-center">
-                  <p className="text-muted-foreground">Map View</p>
+                <p className="font-medium">📍 Live Tracking Active</p>
+                <p className="text-sm text-muted-foreground">
+                  Lat: {currentLocation.lat.toFixed(6)}, Lng: {currentLocation.lng.toFixed(6)}
+                </p>
+                <div className="mt-4 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                  <p className="text-sm text-green-700 dark:text-green-400 font-medium">
+                    🟢 Your location is being shared with customers
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Updates every 7 seconds
+                  </p>
                 </div>
               </div>
             ) : (
