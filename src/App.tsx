@@ -7,6 +7,7 @@ import { LanguageProvider } from "./contexts/LanguageContext";
 import { VoiceAccessibilityProvider } from "./contexts/VoiceAccessibilityContext";
 import Index from "./pages/Index";
 import VendorRegister from "./pages/VendorRegister";
+import VendorsList from "./pages/VendorsList";
 import CustomerRegister from "./pages/CustomerRegister";
 import VendorDashboard from "./pages/VendorDashboard";
 import CustomerDashboard from "./pages/CustomerDashboard";
@@ -27,6 +28,7 @@ const App = () => (
             <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/vendor-register" element={<VendorRegister />} />
+            <Route path="/vendors-list" element={<VendorsList />} />
             <Route path="/customer-register" element={<CustomerRegister />} />
             <Route path="/vendor-dashboard" element={<VendorDashboard />} />
             <Route path="/customer-dashboard" element={<CustomerDashboard />} />

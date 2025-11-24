@@ -1,10 +1,11 @@
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Upload, Camera } from "lucide-react";
+import { ArrowLeft, Upload, Camera, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { LanguageSelector } from "@/components/LanguageSelector";
@@ -12,6 +13,16 @@ import { VoiceControl } from "@/components/VoiceControl";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useVoiceAccessibility } from "@/contexts/VoiceAccessibilityContext";
 import { translations } from "@/translations";
+import { supabase } from "@/integrations/supabase/client";
+
+type VendorFormData = {
+  vendorName: string;
+  phone: string;
+  category: string;
+  primaryArea: string;
+  description: string;
+  photo: FileList;
+};
 
 const VendorRegister = () => {
   const navigate = useNavigate();
@@ -20,6 +31,12 @@ const VendorRegister = () => {
   const { announce } = useVoiceAccessibility();
   const t = translations[language];
   const [photoPreview, setPhotoPreview] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<VendorFormData>();
+  
+  const category = watch("category");
+  const primaryArea = watch("primaryArea");
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -32,13 +49,61 @@ const VendorRegister = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast({
-      title: t.registrationSubmitted,
-      description: t.pendingApproval,
-    });
-    setTimeout(() => navigate('/vendor-dashboard'), 2000);
+  const onSubmit = async (data: VendorFormData) => {
+    if (!data.vendorName || !data.phone || !data.category) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields (Name, Phone, Category)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    try {
+      // Insert vendor data into database
+      const { data: vendorData, error } = await supabase
+        .from('vendors')
+        .insert({
+          vendor_name: data.vendorName,
+          phone: data.phone,
+          category: data.category,
+          primary_area: data.primaryArea || null,
+          description: data.description || null,
+          photo_url: photoPreview || null,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error registering vendor:', error);
+        toast({
+          title: "Registration Failed",
+          description: "Could not register vendor. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: t.registrationSubmitted,
+        description: t.pendingApproval,
+      });
+      
+      announce("Vendor registered successfully");
+      
+      setTimeout(() => navigate('/vendor-dashboard'), 2000);
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -69,15 +134,18 @@ const VendorRegister = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="name">{t.fullName} *</Label>
+                  <Label htmlFor="vendorName">{t.fullName} *</Label>
                   <Input
-                    id="name"
+                    id="vendorName"
                     placeholder={t.fullName}
-                    required
+                    {...register("vendorName", { required: true })}
                     className="h-12"
                   />
+                  {errors.vendorName && (
+                    <p className="text-sm text-destructive">Vendor name is required</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -86,14 +154,20 @@ const VendorRegister = () => {
                     id="phone"
                     type="tel"
                     placeholder="+91 98765 43210"
-                    required
+                    {...register("phone", { required: true })}
                     className="h-12"
                   />
+                  {errors.phone && (
+                    <p className="text-sm text-destructive">Phone number is required</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="service">{t.serviceType} *</Label>
-                  <Select required>
+                  <Label htmlFor="category">{t.serviceType} *</Label>
+                  <Select 
+                    value={category} 
+                    onValueChange={(value) => setValue("category", value)}
+                  >
                     <SelectTrigger className="h-12">
                       <SelectValue placeholder={t.selectService} />
                     </SelectTrigger>
@@ -114,11 +188,17 @@ const VendorRegister = () => {
                       <SelectItem value="other">📦 {t.other}</SelectItem>
                     </SelectContent>
                   </Select>
+                  {errors.category && (
+                    <p className="text-sm text-destructive">Category is required</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="area">{t.primaryArea}</Label>
-                  <Select>
+                  <Label htmlFor="primaryArea">{t.primaryArea}</Label>
+                  <Select 
+                    value={primaryArea} 
+                    onValueChange={(value) => setValue("primaryArea", value)}
+                  >
                     <SelectTrigger className="h-12">
                       <SelectValue placeholder={t.selectArea} />
                     </SelectTrigger>
@@ -173,14 +253,23 @@ const VendorRegister = () => {
                     id="description"
                     className="w-full min-h-[100px] px-3 py-2 rounded-lg border border-input bg-background text-foreground"
                     placeholder={t.aboutServicePlaceholder}
+                    {...register("description")}
                   />
                 </div>
 
                 <Button
                   type="submit"
+                  disabled={isSubmitting}
                   className="w-full h-12 text-lg bg-gradient-to-r from-primary to-secondary hover:opacity-90"
                 >
-                  {t.registerVendor}
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Registering...
+                    </>
+                  ) : (
+                    t.registerVendor
+                  )}
                 </Button>
               </form>
             </CardContent>

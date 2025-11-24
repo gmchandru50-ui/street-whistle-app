@@ -31,6 +31,7 @@ const CustomerDashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [liveVendors, setLiveVendors] = useState<any[]>([]);
+  const [dbVendors, setDbVendors] = useState<any[]>([]);
   
   const [products] = useState([
     { id: 1, name: "Tomatoes", price: 40, unit: "kg", category: "Vegetables", vendor: "Ravi's Vegetables", image: "🍅", inStock: true },
@@ -113,6 +114,26 @@ const CustomerDashboard = () => {
       setLiveVendors(data || []);
     }
   };
+
+  // Fetch vendors from database
+  const fetchVendors = async () => {
+    const { data, error } = await supabase
+      .from('vendors')
+      .select('*')
+      .eq('is_approved', true)
+      .eq('is_active', true);
+
+    if (error) {
+      console.error('Error fetching vendors:', error);
+    } else {
+      setDbVendors(data || []);
+    }
+  };
+
+  // Fetch vendors on mount
+  useEffect(() => {
+    fetchVendors();
+  }, []);
 
   const staticVendors = [
     {
@@ -205,12 +226,12 @@ const CustomerDashboard = () => {
     },
   ];
 
-  // Merge live vendors with static vendors and calculate distances
+  // Merge all vendors and calculate distances
   const activeVendors = useMemo(() => {
     // Add live vendors from database
     const liveVendorData = liveVendors.map((lv) => ({
       id: `live-${lv.vendor_id}`,
-      name: lv.vendor_name,
+      name: lv.vendor_name || "Unknown Vendor",
       type: "Live Vendor",
       rating: 4.5,
       distance: "calculating...",
@@ -221,8 +242,22 @@ const CustomerDashboard = () => {
       distanceKm: 0,
     }));
 
-    // Merge and calculate distances
-    const allVendors = [...staticVendors, ...liveVendorData].map((vendor) => {
+    // Add vendors from vendors table
+    const vendorsFromDb = dbVendors.map((v) => ({
+      id: v.id,
+      name: v.vendor_name || "Unnamed Vendor",
+      type: v.category || "General Service",
+      rating: Number(v.rating) || 4.5,
+      distance: "N/A",
+      location: v.primary_area || "Unknown Area",
+      image: getCategoryEmoji(v.category),
+      isLive: false,
+      coordinates: null,
+      distanceKm: 999,
+    }));
+
+    // Merge all vendors (static + db + live)
+    const allVendors = [...staticVendors, ...vendorsFromDb, ...liveVendorData].map((vendor) => {
       if (userLocation && vendor.coordinates) {
         const distanceKm = calculateDistance(
           userLocation.lat,
@@ -230,14 +265,35 @@ const CustomerDashboard = () => {
           vendor.coordinates[1],
           vendor.coordinates[0]
         );
-        return { ...vendor, distanceKm, distance: `${distanceKm} km away` };
+        return { ...vendor, distanceKm, distance: `${distanceKm.toFixed(2)} km away` };
       }
-      return { ...vendor, distanceKm: 999 };
+      return { ...vendor, distanceKm: vendor.coordinates ? 999 : 1000 };
     });
 
     // Sort by distance (nearest first)
     return allVendors.sort((a, b) => a.distanceKm - b.distanceKm);
-  }, [liveVendors, userLocation]);
+  }, [liveVendors, dbVendors, userLocation]);
+
+  // Helper function to get emoji based on category
+  const getCategoryEmoji = (category: string) => {
+    const emojiMap: { [key: string]: string } = {
+      vegetables: "🥬",
+      fruits: "🍎",
+      both: "🛒",
+      knife: "🔪",
+      utensils: "🍽️",
+      flowers: "🌺",
+      barber: "💈",
+      handicrafts: "🎨",
+      streetfood: "🍜",
+      tailor: "🧵",
+      laundry: "👕",
+      plumber: "🔧",
+      electrician: "💡",
+      other: "📦",
+    };
+    return emojiMap[category?.toLowerCase()] || "📦";
+  };
 
   const categories = ["All", "Vegetables", "Fruits", "Street Food", "Handicrafts"];
   
