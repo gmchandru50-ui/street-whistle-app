@@ -47,6 +47,51 @@ export type Database = {
         }
         Relationships: []
       }
+      vendors: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          is_approved: boolean | null
+          phone: string
+          photo_url: string | null
+          primary_area: string | null
+          rating: number | null
+          updated_at: string | null
+          vendor_name: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_approved?: boolean | null
+          phone: string
+          photo_url?: string | null
+          primary_area?: string | null
+          rating?: number | null
+          updated_at?: string | null
+          vendor_name: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_approved?: boolean | null
+          phone?: string
+          photo_url?: string | null
+          primary_area?: string | null
+          rating?: number | null
+          updated_at?: string | null
+          vendor_name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

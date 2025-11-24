@@ -109,6 +109,20 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Quick Link to Vendors List */}
+      <section className="container mx-auto px-4 pb-8">
+        <div className="max-w-5xl mx-auto text-center">
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => navigate('/vendors-list')}
+            className="border-2"
+          >
+            View All Registered Vendors
+          </Button>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="container mx-auto px-4 py-16 bg-muted/30 rounded-3xl mb-16">
         <div className="max-w-4xl mx-auto">
