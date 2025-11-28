@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       vendor_locations: {
         Row: {
           created_at: string | null
@@ -60,6 +105,7 @@ export type Database = {
           primary_area: string | null
           rating: number | null
           updated_at: string | null
+          user_id: string | null
           vendor_name: string
         }
         Insert: {
@@ -74,6 +120,7 @@ export type Database = {
           primary_area?: string | null
           rating?: number | null
           updated_at?: string | null
+          user_id?: string | null
           vendor_name: string
         }
         Update: {
@@ -88,6 +135,7 @@ export type Database = {
           primary_area?: string | null
           rating?: number | null
           updated_at?: string | null
+          user_id?: string | null
           vendor_name?: string
         }
         Relationships: []
@@ -97,10 +145,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "vendor" | "customer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -227,6 +281,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "vendor", "customer"],
+    },
   },
 } as const

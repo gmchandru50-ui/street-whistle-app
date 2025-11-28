@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Bell, Clock, Star, Menu, LogOut } from "lucide-react";
+import { MapPin, Bell, Clock, Star, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -23,17 +23,70 @@ const VendorDashboard = () => {
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
   const watchIdRef = useRef<number | null>(null);
   const locationIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const vendorId = "V12345"; // In real app, get from auth
-  const vendorName = "Ravi's Vegetables";
+  const [vendor, setVendor] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        navigate('/vendor-login');
+        return;
+      }
+
+      // Check if user has vendor role
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'vendor')
+        .single();
+
+      if (!roleData) {
+        navigate('/vendor-login');
+        return;
+      }
+
+      // Get vendor data
+      const { data: vendorData, error } = await supabase
+        .from('vendors')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error || !vendorData) {
+        toast({
+          title: "Error",
+          description: "Vendor profile not found",
+          variant: "destructive",
+        });
+        navigate('/vendor-login');
+        return;
+      }
+
+      setVendor(vendorData);
+    } catch (error) {
+      console.error('Auth check error:', error);
+      navigate('/vendor-login');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Update location in database
   const updateLocationInDB = async (lat: number, lng: number) => {
+    if (!vendor) return;
     try {
       const { error } = await supabase
         .from('vendor_locations')
         .upsert({
-          vendor_id: vendorId,
-          vendor_name: vendorName,
+          vendor_id: vendor.id,
+          vendor_name: vendor.vendor_name,
           latitude: lat,
           longitude: lng,
           is_active: true,
@@ -62,13 +115,15 @@ const VendorDashboard = () => {
     }
 
     // Mark vendor as inactive
-    try {
-      await supabase
-        .from('vendor_locations')
-        .update({ is_active: false })
-        .eq('vendor_id', vendorId);
-    } catch (error) {
-      console.error('Error stopping tracking:', error);
+    if (vendor) {
+      try {
+        await supabase
+          .from('vendor_locations')
+          .update({ is_active: false })
+          .eq('vendor_id', vendor.id);
+      } catch (error) {
+        console.error('Error stopping tracking:', error);
+      }
     }
 
     setIsSharing(false);
@@ -142,6 +197,56 @@ const VendorDashboard = () => {
     }
   };
 
+  const handleLogout = async () => {
+    await stopTracking();
+    await supabase.auth.signOut();
+    navigate('/');
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!vendor) {
+    return null;
+  }
+
+  if (!vendor.is_approved) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardHeader>
+            <CardTitle className="text-2xl">Application Pending</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="text-center py-6">
+              <div className="mx-auto w-16 h-16 bg-yellow-500/10 rounded-full flex items-center justify-center mb-4">
+                <Clock className="h-8 w-8 text-yellow-500" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Hello, {vendor.vendor_name}!</h3>
+              <p className="text-muted-foreground">
+                Your vendor application is currently pending admin approval. 
+                You will be notified once your application has been reviewed.
+              </p>
+            </div>
+            <Button 
+              onClick={handleLogout} 
+              variant="outline" 
+              className="w-full"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
       {/* Header */}
@@ -149,19 +254,18 @@ const VendorDashboard = () => {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-              <span className="text-white font-bold text-lg">RS</span>
+              <span className="text-white font-bold text-lg">
+                {vendor.vendor_name.charAt(0).toUpperCase()}
+              </span>
             </div>
             <div>
-              <h1 className="font-bold text-lg">Ravi's Vegetables</h1>
-              <p className="text-xs text-muted-foreground">Vendor ID: #V12345</p>
+              <h1 className="font-bold text-lg">{vendor.vendor_name}</h1>
+              <p className="text-xs text-muted-foreground">{vendor.category} • {vendor.primary_area}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <VoiceControl />
             <LanguageSelector />
-            <Button variant="ghost" size="icon">
-              <Menu className="h-5 w-5" />
-            </Button>
           </div>
         </div>
       </header>
@@ -184,7 +288,7 @@ const VendorDashboard = () => {
                 <p className="text-sm text-muted-foreground">{t.alertsToday}</p>
               </div>
               <div className="text-center p-4 bg-muted/50 rounded-lg">
-                <p className="text-3xl font-bold text-secondary">4.5</p>
+                <p className="text-3xl font-bold text-secondary">{vendor.rating || 4.5}</p>
                 <p className="text-sm text-muted-foreground">{t.rating}</p>
               </div>
             </div>
@@ -262,7 +366,7 @@ const VendorDashboard = () => {
                 <span className="text-sm text-muted-foreground">8:00 AM - 10:00 AM</span>
               </div>
               <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
-                <span className="font-medium">Bellandur Area</span>
+                <span className="font-medium">{vendor.primary_area}</span>
                 <Badge>{t.active}</Badge>
               </div>
             </div>
@@ -316,7 +420,7 @@ const VendorDashboard = () => {
         <Button
           variant="outline"
           className="w-full"
-          onClick={() => navigate('/')}
+          onClick={handleLogout}
         >
           <LogOut className="mr-2 h-4 w-4" />
           {t.logout}

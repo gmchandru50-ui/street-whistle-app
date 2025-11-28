@@ -18,6 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 type VendorFormData = {
   vendorName: string;
   phone: string;
+  password: string;
   category: string;
   primaryArea: string;
   description: string;
@@ -50,55 +51,63 @@ const VendorRegister = () => {
   };
 
   const onSubmit = async (data: VendorFormData) => {
-    if (!data.vendorName || !data.phone || !data.category) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields (Name, Phone, Category)",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
-    
     try {
-      // Insert vendor data into database
-      const { data: vendorData, error } = await supabase
-        .from('vendors')
-        .insert({
-          vendor_name: data.vendorName,
-          phone: data.phone,
-          category: data.category,
-          primary_area: data.primaryArea || null,
-          description: data.description || null,
-          photo_url: photoPreview || null,
-        })
-        .select()
-        .single();
+      setIsSubmitting(true);
+      
+      // Create auth user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: data.phone + '@vendor.local',
+        password: data.password,
+        options: {
+          data: {
+            full_name: data.vendorName,
+            phone: data.phone,
+          },
+          emailRedirectTo: `${window.location.origin}/vendor-dashboard`,
+        },
+      });
 
-      if (error) {
-        console.error('Error registering vendor:', error);
-        toast({
-          title: "Registration Failed",
-          description: "Could not register vendor. Please try again.",
-          variant: "destructive",
-        });
-        return;
-      }
+      if (authError) throw authError;
+      if (!authData.user) throw new Error('Failed to create user');
+
+      // Assign vendor role
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .insert([{ user_id: authData.user.id, role: 'vendor' }]);
+
+      if (roleError) throw roleError;
+
+      // Create vendor profile
+      const { error: vendorError } = await supabase
+        .from('vendors')
+        .insert([
+          {
+            user_id: authData.user.id,
+            vendor_name: data.vendorName,
+            phone: data.phone,
+            category: data.category,
+            primary_area: data.primaryArea || null,
+            photo_url: photoPreview || null,
+            description: data.description || null,
+            is_approved: false,
+          },
+        ]);
+
+      if (vendorError) throw vendorError;
 
       toast({
         title: t.registrationSubmitted,
-        description: t.pendingApproval,
+        description: "Your application is pending admin approval. Please login to check your status.",
       });
       
       announce("Vendor registered successfully");
-      
-      setTimeout(() => navigate('/vendor-dashboard'), 2000);
-    } catch (error) {
-      console.error('Error:', error);
+
+      navigate('/vendor-login');
+    } catch (error: any) {
+      console.error('Error registering vendor:', error);
       toast({
-        title: "Error",
-        description: "An unexpected error occurred.",
+        title: "Registration Failed",
+        description: error.message || "Could not register vendor. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -159,6 +168,23 @@ const VendorRegister = () => {
                   />
                   {errors.phone && (
                     <p className="text-sm text-destructive">Phone number is required</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">{t.password || "Password"} *</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Enter password (min 6 characters)"
+                    {...register("password", { 
+                      required: "Password is required",
+                      minLength: { value: 6, message: "Password must be at least 6 characters" }
+                    })}
+                    className="h-12"
+                  />
+                  {errors.password && (
+                    <p className="text-sm text-destructive">{errors.password.message}</p>
                   )}
                 </div>
 

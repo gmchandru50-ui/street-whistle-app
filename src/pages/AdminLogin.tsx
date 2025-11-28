@@ -3,27 +3,65 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Shield } from "lucide-react";
+import { ArrowLeft, Shield, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/translations";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { VoiceControl } from "@/components/VoiceControl";
+import { supabase } from "@/integrations/supabase/client";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { language } = useLanguage();
   const t = translations[language];
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: t.loginSuccessful,
-      description: t.welcomeToAdmin,
-    });
-    setTimeout(() => navigate('/admin-dashboard'), 1500);
+    
+    try {
+      setIsLoading(true);
+
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (authError) throw authError;
+
+      // Check if user has admin role
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', authData.user.id)
+        .eq('role', 'admin')
+        .single();
+
+      if (!roleData) {
+        await supabase.auth.signOut();
+        throw new Error('You do not have admin privileges');
+      }
+
+      toast({
+        title: t.loginSuccessful,
+        description: t.welcomeToAdmin,
+      });
+      navigate('/admin-dashboard');
+    } catch (error: any) {
+      console.error('Admin login error:', error);
+      toast({
+        title: "Login Failed",
+        description: error.message || "Invalid credentials",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -59,10 +97,13 @@ const AdminLogin = () => {
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="username">{t.adminUsername}</Label>
+                  <Label htmlFor="email">Email</Label>
                   <Input
-                    id="username"
-                    placeholder={t.enterAdminUsername}
+                    id="email"
+                    type="email"
+                    placeholder="admin@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     required
                     className="h-12"
                   />
@@ -74,6 +115,8 @@ const AdminLogin = () => {
                     id="password"
                     type="password"
                     placeholder={t.enterPassword}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     required
                     className="h-12"
                   />
@@ -81,14 +124,24 @@ const AdminLogin = () => {
 
                 <Button
                   type="submit"
+                  disabled={isLoading}
                   className="w-full h-12 text-lg bg-gradient-to-r from-accent to-accent/90 hover:opacity-90"
                 >
-                  <Shield className="mr-2 h-5 w-5" />
-                  {t.loginToDashboard}
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Logging in...
+                    </>
+                  ) : (
+                    <>
+                      <Shield className="mr-2 h-5 w-5" />
+                      {t.loginToDashboard}
+                    </>
+                  )}
                 </Button>
 
                 <p className="text-center text-sm text-muted-foreground">
-                  {t.demoCredentials}
+                  To create an admin account, contact system administrator
                 </p>
               </form>
             </CardContent>
