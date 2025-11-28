@@ -135,96 +135,7 @@ const CustomerDashboard = () => {
     fetchVendors();
   }, []);
 
-  const staticVendors = [
-    {
-      id: 1,
-      name: "Ravi's Vegetables",
-      type: "Vegetables & Fruits",
-      rating: 4.5,
-      distance: "250m away",
-      location: "Near Gate 2, Sobha Lakeview",
-      image: "🥬",
-      isLive: true,
-      coordinates: [77.5946, 12.9716] as [number, number],
-    },
-    {
-      id: 2,
-      name: "Kumar's Knife Service",
-      type: "Knife Sharpening",
-      rating: 4.8,
-      distance: "400m away",
-      location: "Main Road, Bellandur",
-      image: "🔪",
-      isLive: true,
-      coordinates: [77.6033, 12.9250] as [number, number],
-    },
-    {
-      id: 3,
-      name: "Lakshmi Flowers",
-      type: "Fresh Flowers",
-      rating: 4.6,
-      distance: "600m away",
-      location: "Temple Street",
-      image: "🌺",
-      isLive: false,
-      coordinates: [77.5850, 12.9650] as [number, number],
-    },
-    {
-      id: 4,
-      name: "Suresh's Barber Shop",
-      type: "Barber Service",
-      rating: 4.7,
-      distance: "300m away",
-      location: "Market Street, Bellandur",
-      image: "💈",
-      isLive: true,
-      coordinates: [77.6050, 12.9300] as [number, number],
-    },
-    {
-      id: 5,
-      name: "Aruna's Handicrafts",
-      type: "Handicraft Materials",
-      rating: 4.4,
-      distance: "500m away",
-      location: "Art Corner, HSR Layout",
-      image: "🎨",
-      isLive: true,
-      coordinates: [77.6400, 12.9100] as [number, number],
-    },
-    {
-      id: 6,
-      name: "Raju's Street Food",
-      type: "Street Food",
-      rating: 4.9,
-      distance: "350m away",
-      location: "Food Court Area, Bellandur",
-      image: "🍜",
-      isLive: true,
-      coordinates: [77.6100, 12.9280] as [number, number],
-    },
-    {
-      id: 7,
-      name: "Ramesh Tailor",
-      type: "Tailor Service",
-      rating: 4.5,
-      distance: "450m away",
-      location: "Shopping Complex",
-      image: "🧵",
-      isLive: false,
-      coordinates: [77.5900, 12.9800] as [number, number],
-    },
-    {
-      id: 8,
-      name: "Quick Laundry",
-      type: "Laundry Service",
-      rating: 4.3,
-      distance: "550m away",
-      location: "Residency Road",
-      image: "👕",
-      isLive: true,
-      coordinates: [77.6200, 12.9350] as [number, number],
-    },
-  ];
+  // Static vendors removed - all vendors now come from database
 
   // Merge all vendors and calculate distances
   const activeVendors = useMemo(() => {
@@ -256,8 +167,8 @@ const CustomerDashboard = () => {
       distanceKm: 999,
     }));
 
-    // Merge all vendors (static + db + live)
-    const allVendors = [...staticVendors, ...vendorsFromDb, ...liveVendorData].map((vendor) => {
+    // Merge all vendors (db + live only)
+    const allVendors = [...vendorsFromDb, ...liveVendorData].map((vendor) => {
       if (userLocation && vendor.coordinates) {
         const distanceKm = calculateDistance(
           userLocation.lat,

@@ -53,7 +53,7 @@ const Index = () => {
           {/* Vendor Card */}
           <Card 
             className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-2 hover:border-primary/50 hover:-translate-y-2"
-            onClick={() => navigate('/vendor-register')}
+            onClick={() => navigate('/vendor-login')}
           >
             <CardContent className="p-8 text-center space-y-4">
               <div className="h-20 w-20 mx-auto rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg group-hover:shadow-2xl transition-shadow">
@@ -64,7 +64,7 @@ const Index = () => {
                 {t.vendorDesc}
               </p>
               <Button className="w-full bg-gradient-to-r from-primary to-primary/90 hover:shadow-lg">
-                {t.vendorBtn}
+                Vendor Login
               </Button>
             </CardContent>
           </Card>

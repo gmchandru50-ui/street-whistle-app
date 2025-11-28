@@ -1,29 +1,123 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, ShoppingCart, AlertCircle, CheckCircle, XCircle, LogOut } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Users, ShoppingCart, AlertCircle, CheckCircle, XCircle, LogOut, Star } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/translations";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { VoiceControl } from "@/components/VoiceControl";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { language } = useLanguage();
   const t = translations[language];
+  const { toast } = useToast();
+  const [vendors, setVendors] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const pendingVendors = [
-    { id: 1, name: "Suresh Kumar", type: "Vegetables", area: "Indiranagar", date: "2 hours ago" },
-    { id: 2, name: "Anita Devi", type: "Flowers", area: "Koramangala", date: "5 hours ago" },
-  ];
+  useEffect(() => {
+    checkAuth();
+    fetchVendors();
+  }, []);
 
-  const activeVendors = [
-    { id: 1, name: "Ravi's Vegetables", rating: 4.5, orders: 234, status: "online" },
-    { id: 2, name: "Kumar's Service", rating: 4.8, orders: 189, status: "offline" },
-    { id: 3, name: "Lakshmi Flowers", rating: 4.6, orders: 156, status: "online" },
-  ];
+  const checkAuth = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      navigate('/admin-login');
+      return;
+    }
+
+    const { data: roleData } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .single();
+
+    if (!roleData) {
+      navigate('/admin-login');
+    }
+  };
+
+  const fetchVendors = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('vendors')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setVendors(data || []);
+    } catch (error) {
+      console.error('Error fetching vendors:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApprove = async (vendorId: string) => {
+    try {
+      const { error } = await supabase
+        .from('vendors')
+        .update({ is_approved: true })
+        .eq('id', vendorId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Vendor Approved",
+        description: "The vendor has been approved successfully.",
+      });
+
+      fetchVendors();
+    } catch (error) {
+      console.error('Error approving vendor:', error);
+      toast({
+        title: "Error",
+        description: "Failed to approve vendor",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleReject = async (vendorId: string) => {
+    try {
+      const { error } = await supabase
+        .from('vendors')
+        .update({ is_approved: false })
+        .eq('id', vendorId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Vendor Rejected",
+        description: "The vendor application has been rejected.",
+      });
+
+      fetchVendors();
+    } catch (error) {
+      console.error('Error rejecting vendor:', error);
+      toast({
+        title: "Error",
+        description: "Failed to reject vendor",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate('/');
+  };
+
+  const pendingVendors = vendors.filter(v => !v.is_approved);
+  const approvedVendors = vendors.filter(v => v.is_approved);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
@@ -44,7 +138,7 @@ const AdminDashboard = () => {
           <div className="flex items-center gap-2">
             <VoiceControl />
             <LanguageSelector />
-            <Button variant="outline" onClick={() => navigate('/')}>
+            <Button variant="outline" onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
               {t.logout}
             </Button>
@@ -61,8 +155,8 @@ const AdminDashboard = () => {
               <ShoppingCart className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">24</div>
-              <p className="text-xs text-muted-foreground">+2 {t.pendingApprovalCount}</p>
+              <div className="text-2xl font-bold">{vendors.length}</div>
+              <p className="text-xs text-muted-foreground">+{pendingVendors.length} {t.pendingApprovalCount}</p>
             </CardContent>
           </Card>
 
@@ -113,31 +207,48 @@ const AdminDashboard = () => {
           <TabsContent value="pending" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>{t.pendingVendorApprovals}</CardTitle>
+                <CardTitle>{t.pendingVendorApprovals} ({pendingVendors.length})</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {pendingVendors.map((vendor) => (
-                    <div key={vendor.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="space-y-1">
-                        <p className="font-medium">{vendor.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {vendor.type} • {vendor.area} • {vendor.date}
-                        </p>
+                {loading ? (
+                  <p className="text-muted-foreground">Loading...</p>
+                ) : pendingVendors.length === 0 ? (
+                  <p className="text-muted-foreground">No pending approvals</p>
+                ) : (
+                  <div className="space-y-4">
+                    {pendingVendors.map((vendor) => (
+                      <div key={vendor.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div>
+                          <h3 className="font-semibold">{vendor.vendor_name}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {vendor.category} • {vendor.primary_area} • {vendor.phone}
+                          </p>
+                          {vendor.description && (
+                            <p className="text-sm text-muted-foreground mt-1">{vendor.description}</p>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="default"
+                            onClick={() => handleApprove(vendor.id)}
+                          >
+                            <CheckCircle className="mr-1 h-4 w-4" />
+                            {t.approve}
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="destructive"
+                            onClick={() => handleReject(vendor.id)}
+                          >
+                            <XCircle className="mr-1 h-4 w-4" />
+                            {t.reject}
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" className="bg-secondary hover:bg-secondary/90">
-                          <CheckCircle className="mr-1 h-4 w-4" />
-                          {t.approve}
-                        </Button>
-                        <Button size="sm" variant="destructive">
-                          <XCircle className="mr-1 h-4 w-4" />
-                          {t.reject}
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -145,29 +256,44 @@ const AdminDashboard = () => {
           <TabsContent value="vendors" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>{t.activeVendorsList}</CardTitle>
+                <CardTitle>{t.activeVendorsList} ({approvedVendors.length})</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {activeVendors.map((vendor) => (
-                    <div key={vendor.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="font-medium">{vendor.name}</p>
-                          <Badge variant={vendor.status === "online" ? "default" : "secondary"}>
-                            {vendor.status === "online" ? `🟢 ${t.online}` : `⚫ ${t.offline}`}
-                          </Badge>
+                {loading ? (
+                  <p className="text-muted-foreground">Loading...</p>
+                ) : approvedVendors.length === 0 ? (
+                  <p className="text-muted-foreground">No approved vendors yet</p>
+                ) : (
+                  <div className="space-y-4">
+                    {approvedVendors.map((vendor) => (
+                      <div key={vendor.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold">{vendor.vendor_name}</h3>
+                            <Badge variant={vendor.is_active ? "default" : "secondary"}>
+                              {vendor.is_active ? `🟢 ${t.online}` : `⚫ ${t.offline}`}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+                              {vendor.rating || 4.5}
+                            </span>
+                            <span>{vendor.category}</span>
+                            <span>{vendor.phone}</span>
+                          </div>
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                          {t.rating}: {vendor.rating} ⭐ • {vendor.orders} {t.totalAlerts}
-                        </p>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleReject(vendor.id)}
+                        >
+                          Revoke
+                        </Button>
                       </div>
-                      <Button size="sm" variant="outline">
-                        {t.viewDetails}
-                      </Button>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
