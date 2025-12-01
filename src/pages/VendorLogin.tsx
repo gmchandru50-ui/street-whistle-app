@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Loader2 } from "lucide-react";
 
@@ -15,71 +14,30 @@ const VendorLogin = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     
-    try {
-      setIsLoading(true);
-
-      // Login with phone (converted to email format) and password
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: phone + '@vendor.local',
-        password: password,
-      });
-
-      if (authError) throw authError;
-
-      // Check if user has vendor role
-      const { data: roleData } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', authData.user.id)
-        .eq('role', 'vendor')
-        .single();
-
-      if (!roleData) {
-        await supabase.auth.signOut();
-        throw new Error('You are not registered as a vendor');
-      }
-
-      // Get vendor approval status
-      const { data: vendorData } = await supabase
-        .from('vendors')
-        .select('is_approved, vendor_name')
-        .eq('user_id', authData.user.id)
-        .single();
-
-      if (!vendorData) {
-        await supabase.auth.signOut();
-        throw new Error('Vendor profile not found');
-      }
-
-      if (!vendorData.is_approved) {
-        toast({
-          title: "Pending Approval",
-          description: `Hello ${vendorData.vendor_name}, your application is pending admin approval. Please wait for approval before accessing your dashboard.`,
-          variant: "default",
-        });
-        await supabase.auth.signOut();
-        return;
-      }
-
-      toast({
-        title: "Login Successful",
-        description: `Welcome back, ${vendorData.vendor_name}!`,
-      });
-
-      navigate('/vendor-dashboard');
-    } catch (error: any) {
-      console.error('Login error:', error);
+    // Simple validation - just check if fields are filled
+    if (!phone || !password) {
       toast({
         title: "Login Failed",
-        description: error.message || "Invalid phone number or password",
+        description: "Please enter both phone number and password",
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
+      return;
     }
+
+    // Simulate login check
+    setTimeout(() => {
+      toast({
+        title: "Login Successful",
+        description: `Welcome back!`,
+      });
+      navigate('/vendor-dashboard');
+      setIsLoading(false);
+    }, 1000);
   };
 
   return (
