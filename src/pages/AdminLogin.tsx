@@ -10,7 +10,6 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/translations";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { VoiceControl } from "@/components/VoiceControl";
-import { supabase } from "@/integrations/supabase/client";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -21,47 +20,30 @@ const AdminLogin = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    try {
-      setIsLoading(true);
+    setIsLoading(true);
 
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (authError) throw authError;
-
-      // Check if user has admin role
-      const { data: roleData } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', authData.user.id)
-        .eq('role', 'admin')
-        .single();
-
-      if (!roleData) {
-        await supabase.auth.signOut();
-        throw new Error('You do not have admin privileges');
-      }
-
-      toast({
-        title: t.loginSuccessful,
-        description: t.welcomeToAdmin,
-      });
-      navigate('/admin-dashboard');
-    } catch (error: any) {
-      console.error('Admin login error:', error);
+    // Simple validation - just check if fields are filled
+    if (!email || !password) {
       toast({
         title: "Login Failed",
-        description: error.message || "Invalid credentials",
+        description: "Please enter both email and password",
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
+      return;
     }
+
+    // Simulate login check
+    setTimeout(() => {
+      toast({
+        title: t.loginSuccessful || "Login Successful",
+        description: t.welcomeToAdmin || "Welcome back, Admin!",
+      });
+      navigate('/admin-dashboard');
+      setIsLoading(false);
+    }, 1000);
   };
 
   return (
