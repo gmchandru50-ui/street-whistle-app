@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      customer_feedback: {
+        Row: {
+          created_at: string
+          customer_email: string | null
+          customer_name: string
+          customer_phone: string | null
+          feedback_type: string
+          id: string
+          message: string
+          rating: number | null
+          vendor_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          customer_email?: string | null
+          customer_name: string
+          customer_phone?: string | null
+          feedback_type?: string
+          id?: string
+          message: string
+          rating?: number | null
+          vendor_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string
+          customer_phone?: string | null
+          feedback_type?: string
+          id?: string
+          message?: string
+          rating?: number | null
+          vendor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_feedback_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null
