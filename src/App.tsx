@@ -6,14 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { VoiceAccessibilityProvider } from "./contexts/VoiceAccessibilityContext";
 import Index from "./pages/Index";
-import VendorRegister from "./pages/VendorRegister";
-import VendorLogin from "./pages/VendorLogin";
-import VendorsList from "./pages/VendorsList";
 import CustomerRegister from "./pages/CustomerRegister";
-import VendorDashboard from "./pages/VendorDashboard";
 import CustomerDashboard from "./pages/CustomerDashboard";
-import AdminLogin from "./pages/AdminLogin";
-import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,17 +21,11 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/vendor-register" element={<VendorRegister />} />
-            <Route path="/vendor-login" element={<VendorLogin />} />
-            <Route path="/vendors-list" element={<VendorsList />} />
-            <Route path="/customer-register" element={<CustomerRegister />} />
-            <Route path="/vendor-dashboard" element={<VendorDashboard />} />
-            <Route path="/customer-dashboard" element={<CustomerDashboard />} />
-            <Route path="/admin-login" element={<AdminLogin />} />
-            <Route path="/admin-dashboard" element={<AdminDashboard />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
+              <Route path="/" element={<Index />} />
+              <Route path="/customer-register" element={<CustomerRegister />} />
+              <Route path="/customer-dashboard" element={<CustomerDashboard />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
