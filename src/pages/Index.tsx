@@ -1,31 +1,70 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, ShoppingCart, User, LogIn } from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { MapPin, ShoppingCart, User, Store, Shield, MessageSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/translations";
+import CustomerFeedback from "@/components/CustomerFeedback";
 
 const Index = () => {
   const navigate = useNavigate();
   const { language } = useLanguage();
   const t = translations[language];
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
       {/* Header */}
       <header className="border-b border-border/50 backdrop-blur-sm bg-background/80 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-              <ShoppingCart className="h-5 w-5 text-white" />
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                <ShoppingCart className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-foreground">PushCart</h1>
+                <p className="text-xs text-muted-foreground">{t.tagline}</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-foreground">PushCart</h1>
-              <p className="text-xs text-muted-foreground">{t.tagline}</p>
+            <div className="flex items-center gap-2">
+              <LanguageSelector />
             </div>
           </div>
-          <LanguageSelector />
+          
+          {/* Navigation */}
+          <nav className="mt-4 flex flex-wrap justify-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/customer-register")}
+              className="text-primary hover:bg-primary/10"
+            >
+              <User className="h-4 w-4 mr-1" />
+              Customer Login
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/vendor-login")}
+              className="text-emerald-600 hover:bg-emerald-600/10"
+            >
+              <Store className="h-4 w-4 mr-1" />
+              Vendor Login
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/admin-login")}
+              className="text-purple-600 hover:bg-purple-600/10"
+            >
+              <Shield className="h-4 w-4 mr-1" />
+              Admin Login
+            </Button>
+          </nav>
         </div>
       </header>
 
@@ -47,10 +86,10 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Customer Actions */}
+      {/* User Type Cards */}
       <section className="container mx-auto px-4 pb-16">
-        <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-          {/* Sign Up Card */}
+        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          {/* Customer Card */}
           <Card 
             className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-2 hover:border-primary/50 hover:-translate-y-2"
             onClick={() => navigate('/customer-register')}
@@ -60,7 +99,7 @@ const Index = () => {
                 <User className="h-10 w-10 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-foreground">{t.customerTitle}</h3>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {t.customerDesc}
               </p>
               <Button className="w-full bg-gradient-to-r from-primary to-primary/90 hover:shadow-lg">
@@ -69,21 +108,40 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          {/* Login Card */}
+          {/* Vendor Card */}
           <Card 
-            className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-2 hover:border-secondary/50 hover:-translate-y-2"
-            onClick={() => navigate('/customer-register')}
+            className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-2 hover:border-emerald-500/50 hover:-translate-y-2"
+            onClick={() => navigate('/vendor-login')}
           >
             <CardContent className="p-8 text-center space-y-4">
-              <div className="h-20 w-20 mx-auto rounded-2xl bg-gradient-to-br from-secondary to-secondary/70 flex items-center justify-center shadow-lg group-hover:shadow-2xl transition-shadow">
-                <LogIn className="h-10 w-10 text-white" />
+              <div className="h-20 w-20 mx-auto rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-600/70 flex items-center justify-center shadow-lg group-hover:shadow-2xl transition-shadow">
+                <Store className="h-10 w-10 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-foreground">Already a Customer?</h3>
-              <p className="text-muted-foreground">
-                Login to access your dashboard, track orders, and find nearby vendors.
+              <h3 className="text-2xl font-bold text-foreground">Vendor Portal</h3>
+              <p className="text-muted-foreground text-sm">
+                Register your business, manage orders, and track your location for customers.
               </p>
-              <Button className="w-full bg-gradient-to-r from-secondary to-secondary/90 hover:shadow-lg">
-                Login
+              <Button className="w-full bg-gradient-to-r from-emerald-600 to-emerald-600/90 hover:shadow-lg">
+                Vendor Login
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Admin Card */}
+          <Card 
+            className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-2 hover:border-purple-500/50 hover:-translate-y-2"
+            onClick={() => navigate('/admin-login')}
+          >
+            <CardContent className="p-8 text-center space-y-4">
+              <div className="h-20 w-20 mx-auto rounded-2xl bg-gradient-to-br from-purple-600 to-purple-600/70 flex items-center justify-center shadow-lg group-hover:shadow-2xl transition-shadow">
+                <Shield className="h-10 w-10 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">Admin Portal</h3>
+              <p className="text-muted-foreground text-sm">
+                Manage vendors, view customer feedback, and oversee platform operations.
+              </p>
+              <Button className="w-full bg-gradient-to-r from-purple-600 to-purple-600/90 hover:shadow-lg">
+                Admin Login
               </Button>
             </CardContent>
           </Card>
@@ -121,6 +179,25 @@ const Index = () => {
               <p className="text-sm text-muted-foreground">{t.rateDesc}</p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Feedback Section */}
+      <section className="container mx-auto px-4 pb-16">
+        <div className="max-w-2xl mx-auto text-center space-y-4">
+          <h3 className="text-2xl font-bold">Share Your Feedback</h3>
+          <p className="text-muted-foreground">Help us improve PushCart by sharing your thoughts and suggestions.</p>
+          <Dialog open={feedbackOpen} onOpenChange={setFeedbackOpen}>
+            <DialogTrigger asChild>
+              <Button size="lg" variant="outline" className="gap-2">
+                <MessageSquare className="h-5 w-5" />
+                Give Feedback
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-lg p-0 border-0">
+              <CustomerFeedback onClose={() => setFeedbackOpen(false)} />
+            </DialogContent>
+          </Dialog>
         </div>
       </section>
 
