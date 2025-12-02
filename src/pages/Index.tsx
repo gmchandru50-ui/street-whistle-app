@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { MapPin, ShoppingCart, User, Shield } from "lucide-react";
+import { MapPin, ShoppingCart, User, LogIn } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -47,79 +47,46 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Role Selection Cards */}
+      {/* Customer Actions */}
       <section className="container mx-auto px-4 pb-16">
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {/* Vendor Card */}
+        <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+          {/* Sign Up Card */}
           <Card 
             className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-2 hover:border-primary/50 hover:-translate-y-2"
-            onClick={() => navigate('/vendor-login')}
-          >
-            <CardContent className="p-8 text-center space-y-4">
-              <div className="h-20 w-20 mx-auto rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg group-hover:shadow-2xl transition-shadow">
-                <ShoppingCart className="h-10 w-10 text-white" />
-              </div>
-              <h3 className="text-2xl font-bold text-foreground">{t.vendorTitle}</h3>
-              <p className="text-muted-foreground">
-                {t.vendorDesc}
-              </p>
-              <Button className="w-full bg-gradient-to-r from-primary to-primary/90 hover:shadow-lg">
-                Vendor Login
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Customer Card */}
-          <Card 
-            className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-2 hover:border-secondary/50 hover:-translate-y-2"
             onClick={() => navigate('/customer-register')}
           >
             <CardContent className="p-8 text-center space-y-4">
-              <div className="h-20 w-20 mx-auto rounded-2xl bg-gradient-to-br from-secondary to-secondary/70 flex items-center justify-center shadow-lg group-hover:shadow-2xl transition-shadow">
+              <div className="h-20 w-20 mx-auto rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg group-hover:shadow-2xl transition-shadow">
                 <User className="h-10 w-10 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-foreground">{t.customerTitle}</h3>
               <p className="text-muted-foreground">
                 {t.customerDesc}
               </p>
-              <Button className="w-full bg-gradient-to-r from-secondary to-secondary/90 hover:shadow-lg">
+              <Button className="w-full bg-gradient-to-r from-primary to-primary/90 hover:shadow-lg">
                 {t.customerBtn}
               </Button>
             </CardContent>
           </Card>
 
-          {/* Admin Card */}
+          {/* Login Card */}
           <Card 
-            className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-2 hover:border-accent/50 hover:-translate-y-2"
-            onClick={() => navigate('/admin-login')}
+            className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-2 hover:border-secondary/50 hover:-translate-y-2"
+            onClick={() => navigate('/customer-register')}
           >
             <CardContent className="p-8 text-center space-y-4">
-              <div className="h-20 w-20 mx-auto rounded-2xl bg-gradient-to-br from-accent to-accent/70 flex items-center justify-center shadow-lg group-hover:shadow-2xl transition-shadow">
-                <Shield className="h-10 w-10 text-white" />
+              <div className="h-20 w-20 mx-auto rounded-2xl bg-gradient-to-br from-secondary to-secondary/70 flex items-center justify-center shadow-lg group-hover:shadow-2xl transition-shadow">
+                <LogIn className="h-10 w-10 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-foreground">{t.adminTitle}</h3>
+              <h3 className="text-2xl font-bold text-foreground">Already a Customer?</h3>
               <p className="text-muted-foreground">
-                {t.adminDesc}
+                Login to access your dashboard, track orders, and find nearby vendors.
               </p>
-              <Button className="w-full bg-gradient-to-r from-accent to-accent/90 hover:shadow-lg">
-                {t.adminBtn}
+              <Button className="w-full bg-gradient-to-r from-secondary to-secondary/90 hover:shadow-lg">
+                Login
               </Button>
             </CardContent>
           </Card>
-        </div>
-      </section>
-
-      {/* Quick Link to Vendors List */}
-      <section className="container mx-auto px-4 pb-8">
-        <div className="max-w-5xl mx-auto text-center">
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={() => navigate('/vendors-list')}
-            className="border-2"
-          >
-            View All Registered Vendors
-          </Button>
         </div>
       </section>
 
