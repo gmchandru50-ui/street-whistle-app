@@ -103,6 +103,42 @@ export type Database = {
         }
         Relationships: []
       }
+      users_list: {
+        Row: {
+          auth_id: string | null
+          created_at: string | null
+          email: string | null
+          full_name: string
+          id: string
+          is_active: boolean | null
+          location: string | null
+          phone: string | null
+          shop_name: string | null
+        }
+        Insert: {
+          auth_id?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name: string
+          id?: string
+          is_active?: boolean | null
+          location?: string | null
+          phone?: string | null
+          shop_name?: string | null
+        }
+        Update: {
+          auth_id?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string
+          id?: string
+          is_active?: boolean | null
+          location?: string | null
+          phone?: string | null
+          shop_name?: string | null
+        }
+        Relationships: []
+      }
       vendor_locations: {
         Row: {
           created_at: string | null
