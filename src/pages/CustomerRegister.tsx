@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,67 +8,16 @@ import { useToast } from "@/hooks/use-toast";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { VoiceControl } from "@/components/VoiceControl";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useVoiceAccessibility } from "@/contexts/VoiceAccessibilityContext";
 import { translations } from "@/translations";
 
 const CustomerRegister = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { language } = useLanguage();
-  const { announce } = useVoiceAccessibility();
   const t = translations[language];
-  const [otpSent, setOtpSent] = useState(false);
-  const [phone, setPhone] = useState("");
-  const [generatedOtp, setGeneratedOtp] = useState("");
-  const [otpInput, setOtpInput] = useState("");
-
-  const handleSendOTP = () => {
-    if (phone && phone.length >= 10) {
-      // Generate a random 6-digit OTP
-      const otp = Math.floor(100000 + Math.random() * 900000).toString();
-      setGeneratedOtp(otp);
-      setOtpSent(true);
-      
-      // In a real app, this would be sent via SMS gateway (Twilio, MessageBird, etc.)
-      // OTP is stored in state for demo purposes only - never log or display in production
-      
-      toast({
-        title: `✅ ${t.otpSent}`,
-        description: `${t.otpSentDesc} ${phone}`,
-        duration: 5000,
-      });
-    } else {
-      toast({
-        title: `❌ ${t.invalidPhone}`,
-        description: t.invalidPhoneDesc,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleVerifyOtp = () => {
-    if (otpInput === generatedOtp) {
-      toast({
-        title: `✅ ${t.otpVerified}`,
-        description: t.otpVerifiedDesc,
-      });
-      return true;
-    } else {
-      toast({
-        title: `❌ ${t.invalidOTP}`,
-        description: t.invalidOTPDesc,
-        variant: "destructive",
-      });
-      return false;
-    }
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!handleVerifyOtp()) {
-      return;
-    }
     
     toast({
       title: `🎉 ${t.registrationSuccess}`,
@@ -119,57 +67,14 @@ const CustomerRegister = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="phone">{t.phoneNumber} *</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="phone"
-                      type="tel"
-                      placeholder="+91 98765 43210"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      required
-                      className="h-12"
-                      disabled={otpSent}
-                    />
-                    {!otpSent && (
-                      <Button
-                        type="button"
-                        onClick={handleSendOTP}
-                        className="h-12 bg-secondary hover:bg-secondary/90"
-                      >
-                        {t.sendOTP}
-                      </Button>
-                    )}
-                  </div>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="+91 98765 43210"
+                    required
+                    className="h-12"
+                  />
                 </div>
-
-                {otpSent && (
-                  <div className="space-y-2 animate-in slide-in-from-top duration-300">
-                    <Label htmlFor="otp">{t.enterOTP} *</Label>
-                    <Input
-                      id="otp"
-                      type="text"
-                      placeholder={t.otpPlaceholder}
-                      value={otpInput}
-                      onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                      required
-                      maxLength={6}
-                      className="h-12 text-center text-2xl tracking-widest"
-                    />
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs text-muted-foreground">
-                        {t.demoMode}
-                      </p>
-                      <Button
-                        type="button"
-                        variant="link"
-                        className="text-sm text-primary"
-                        onClick={handleSendOTP}
-                      >
-                        {t.resendOTP}
-                      </Button>
-                    </div>
-                  </div>
-                )}
 
                 <div className="space-y-2">
                   <Label htmlFor="apartment">{t.apartment}</Label>
@@ -204,7 +109,6 @@ const CustomerRegister = () => {
                 <Button
                   type="submit"
                   className="w-full h-12 text-lg bg-gradient-to-r from-secondary to-accent hover:opacity-90"
-                  disabled={!otpSent}
                 >
                   {t.completeRegistration}
                 </Button>
