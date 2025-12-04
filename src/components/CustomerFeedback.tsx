@@ -8,6 +8,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { MessageSquare, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { z } from "zod";
+
+const feedbackSchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
+  email: z.string().trim().email("Invalid email address").max(255).optional().or(z.literal("")),
+  phone: z.string().regex(/^\+?[\d\s-]{10,15}$/, "Invalid phone format").optional().or(z.literal("")),
+  feedbackType: z.enum(["general", "complaint", "suggestion", "appreciation"]),
+  message: z.string().trim().min(10, "Message must be at least 10 characters").max(2000, "Message must be less than 2000 characters"),
+});
 
 interface CustomerFeedbackProps {
   onClose?: () => void;
@@ -30,12 +39,26 @@ const CustomerFeedback = ({ onClose }: CustomerFeedbackProps) => {
     setIsLoading(true);
 
     try {
+      // Validate form data with zod
+      const validationResult = feedbackSchema.safeParse(formData);
+      if (!validationResult.success) {
+        const firstError = validationResult.error.errors[0];
+        toast({
+          title: "Validation Error",
+          description: firstError.message,
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      const validatedData = validationResult.data;
       const { error } = await supabase.from("customer_feedback").insert({
-        customer_name: formData.name,
-        customer_email: formData.email,
-        customer_phone: formData.phone,
-        feedback_type: formData.feedbackType,
-        message: formData.message,
+        customer_name: validatedData.name,
+        customer_email: validatedData.email || null,
+        customer_phone: validatedData.phone || null,
+        feedback_type: validatedData.feedbackType,
+        message: validatedData.message,
         rating: rating || null,
       });
 

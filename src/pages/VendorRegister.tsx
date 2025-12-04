@@ -9,6 +9,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Store, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { z } from "zod";
+
+const vendorSchema = z.object({
+  email: z.string().trim().email("Invalid email address").max(255, "Email too long"),
+  password: z.string().min(8, "Password must be at least 8 characters").max(72, "Password too long"),
+  vendorName: z.string().trim().min(2, "Business name must be at least 2 characters").max(100, "Business name too long"),
+  phone: z.string().regex(/^\+?[\d\s-]{10,15}$/, "Invalid phone format"),
+  category: z.string().min(1, "Please select a category"),
+  primaryArea: z.string().max(200, "Service area too long").optional().or(z.literal("")),
+  description: z.string().max(1000, "Description too long").optional().or(z.literal("")),
+});
 
 const vendorCategories = [
   "Vegetables",
@@ -41,10 +52,25 @@ const VendorRegister = () => {
     setIsLoading(true);
 
     try {
+      // Validate form data with zod
+      const validationResult = vendorSchema.safeParse(formData);
+      if (!validationResult.success) {
+        const firstError = validationResult.error.errors[0];
+        toast({
+          title: "Validation Error",
+          description: firstError.message,
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      const validatedData = validationResult.data;
+
       // Create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
+        email: validatedData.email,
+        password: validatedData.password,
         options: {
           emailRedirectTo: `${window.location.origin}/vendor-dashboard`,
         },
@@ -56,11 +82,11 @@ const VendorRegister = () => {
         // Create vendor record
         const { error: vendorError } = await supabase.from("vendors").insert({
           user_id: authData.user.id,
-          vendor_name: formData.vendorName,
-          phone: formData.phone,
-          category: formData.category,
-          primary_area: formData.primaryArea,
-          description: formData.description,
+          vendor_name: validatedData.vendorName,
+          phone: validatedData.phone,
+          category: validatedData.category,
+          primary_area: validatedData.primaryArea || null,
+          description: validatedData.description || null,
           is_approved: false,
           is_active: true,
         });
