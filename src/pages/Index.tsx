@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { MapPin, ShoppingCart, User, Store, Shield, MessageSquare } from "lucide-react";
+import { MapPin, ShoppingCart, User, Store, MessageSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -55,15 +55,6 @@ const Index = () => {
               <Store className="h-4 w-4 mr-1" />
               Vendor Login
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/admin-login")}
-              className="text-purple-600 hover:bg-purple-600/10"
-            >
-              <Shield className="h-4 w-4 mr-1" />
-              Admin Login
-            </Button>
           </nav>
         </div>
       </header>
@@ -88,7 +79,7 @@ const Index = () => {
 
       {/* User Type Cards */}
       <section className="container mx-auto px-4 pb-16">
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
           {/* Customer Card */}
           <Card 
             className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-2 hover:border-primary/50 hover:-translate-y-2"
@@ -127,24 +118,6 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          {/* Admin Card */}
-          <Card 
-            className="group hover:shadow-xl transition-all duration-300 cursor-pointer border-2 hover:border-purple-500/50 hover:-translate-y-2"
-            onClick={() => navigate('/admin-login')}
-          >
-            <CardContent className="p-8 text-center space-y-4">
-              <div className="h-20 w-20 mx-auto rounded-2xl bg-gradient-to-br from-purple-600 to-purple-600/70 flex items-center justify-center shadow-lg group-hover:shadow-2xl transition-shadow">
-                <Shield className="h-10 w-10 text-white" />
-              </div>
-              <h3 className="text-2xl font-bold text-foreground">Admin Portal</h3>
-              <p className="text-muted-foreground text-sm">
-                Manage vendors, view customer feedback, and oversee platform operations.
-              </p>
-              <Button className="w-full bg-gradient-to-r from-purple-600 to-purple-600/90 hover:shadow-lg">
-                Admin Login
-              </Button>
-            </CardContent>
-          </Card>
         </div>
       </section>
 

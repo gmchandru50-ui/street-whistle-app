@@ -11,7 +11,7 @@ import CustomerDashboard from "./pages/CustomerDashboard";
 import VendorLogin from "./pages/VendorLogin";
 import VendorRegister from "./pages/VendorRegister";
 import VendorDashboard from "./pages/VendorDashboard";
-import AdminLogin from "./pages/AdminLogin";
+
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
@@ -32,7 +32,7 @@ const App = () => (
               <Route path="/vendor-login" element={<VendorLogin />} />
               <Route path="/vendor-register" element={<VendorRegister />} />
               <Route path="/vendor-dashboard" element={<VendorDashboard />} />
-              <Route path="/admin-login" element={<AdminLogin />} />
+              
               <Route path="/admin-dashboard" element={<AdminDashboard />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
