@@ -46,9 +46,17 @@ const AdminLogin = () => {
       });
       navigate("/admin-dashboard");
     } catch (error: any) {
+      let message = "Something went wrong";
+      if (error.message?.includes("Invalid login credentials")) {
+        message = "Invalid email or password. Please check your credentials.";
+      } else if (error.message?.includes("Admin privileges")) {
+        message = error.message;
+      } else {
+        message = error.message || "Login failed";
+      }
       toast({
         title: "Login Failed",
-        description: error.message || "Invalid credentials",
+        description: message,
         variant: "destructive",
       });
     } finally {
@@ -104,8 +112,11 @@ const AdminLogin = () => {
               className="w-full bg-purple-600 hover:bg-purple-700"
               disabled={isLoading}
             >
-              {isLoading ? "Logging in..." : "Login as Admin"}
+            {isLoading ? "Logging in..." : "Login as Admin"}
             </Button>
+            <p className="text-xs text-muted-foreground text-center mt-4">
+              Admin accounts must be created by the system administrator.
+            </p>
           </form>
         </CardContent>
       </Card>
