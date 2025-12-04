@@ -30,13 +30,13 @@ const CustomerRegister = () => {
       setGeneratedOtp(otp);
       setOtpSent(true);
       
-      // In a real app, this would be sent via SMS
-      console.log(`OTP for ${phone}: ${otp}`);
+      // In a real app, this would be sent via SMS gateway (Twilio, MessageBird, etc.)
+      // OTP is stored in state for demo purposes only - never log or display in production
       
       toast({
         title: `✅ ${t.otpSent}`,
-        description: `${t.otpSentDesc} ${phone}. Demo OTP: ${otp}`,
-        duration: 10000,
+        description: `${t.otpSentDesc} ${phone}`,
+        duration: 5000,
       });
     } else {
       toast({
