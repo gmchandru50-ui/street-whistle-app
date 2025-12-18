@@ -32,6 +32,31 @@ const CustomerDashboard = () => {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [liveVendors, setLiveVendors] = useState<any[]>([]);
   const [dbVendors, setDbVendors] = useState<any[]>([]);
+  const [userName, setUserName] = useState<string>("");
+
+  // Fetch user name
+  useEffect(() => {
+    const fetchUserName = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        // Try to get name from profiles first
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", user.id)
+          .maybeSingle();
+        
+        if (profile?.full_name) {
+          setUserName(profile.full_name);
+        } else if (user.user_metadata?.full_name) {
+          setUserName(user.user_metadata.full_name);
+        } else if (user.email) {
+          setUserName(user.email.split('@')[0]);
+        }
+      }
+    };
+    fetchUserName();
+  }, []);
   
   const [products] = useState([
     { id: 1, name: "Tomatoes", price: 40, unit: "kg", category: "Vegetables", vendor: "Ravi's Vegetables", image: "🍅", inStock: true },
@@ -285,10 +310,10 @@ const CustomerDashboard = () => {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-full bg-gradient-to-br from-secondary to-accent flex items-center justify-center">
-              <span className="text-white font-bold text-lg">PM</span>
+              <span className="text-white font-bold text-lg">{userName ? userName.charAt(0).toUpperCase() : "U"}</span>
             </div>
             <div>
-              <h1 className="font-bold text-lg">Welcome, Priya!</h1>
+              <h1 className="font-bold text-lg">Welcome, {userName || "User"} 👋</h1>
               <p className="text-xs text-muted-foreground">Bellandur, Bangalore</p>
             </div>
           </div>

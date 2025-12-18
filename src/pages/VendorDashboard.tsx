@@ -160,8 +160,8 @@ const VendorDashboard = () => {
               <Store className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-foreground">Vendor Dashboard</h1>
-              <p className="text-sm text-muted-foreground">{vendor?.vendor_name}</p>
+              <h1 className="text-xl font-bold text-foreground">Welcome, {vendor?.vendor_name} 👋</h1>
+              <p className="text-sm text-muted-foreground">Vendor Dashboard</p>
             </div>
           </div>
           <Button variant="outline" onClick={handleLogout}>
