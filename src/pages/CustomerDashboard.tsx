@@ -296,6 +296,15 @@ const CustomerDashboard = () => {
 
   const cartItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast({
+      title: "Logged out",
+      description: "You have been logged out successfully",
+    });
+    navigate("/");
+  };
+
   // Filter vendors based on search query
   const filteredVendors = !searchQuery ? activeVendors : activeVendors.filter(vendor => 
     vendor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -337,8 +346,8 @@ const CustomerDashboard = () => {
               <Bell className="h-5 w-5" />
               <span className="absolute top-1 right-1 h-2 w-2 bg-primary rounded-full" />
             </Button>
-            <Button variant="ghost" size="icon">
-              <Menu className="h-5 w-5" />
+            <Button variant="ghost" size="icon" onClick={handleLogout} title="Logout">
+              <LogOut className="h-5 w-5" />
             </Button>
           </div>
         </div>
